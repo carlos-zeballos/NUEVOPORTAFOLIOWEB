@@ -1,0 +1,26 @@
+node_modules/
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# TypeScript build artifacts
+*.tsbuildinfo
+*.d.ts
+vite.config.js
+tailwind.config.js
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

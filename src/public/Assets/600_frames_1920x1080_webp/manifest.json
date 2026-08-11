@@ -1,0 +1,66 @@
+{
+  "frames": 600,
+  "format": "WebP lossless",
+  "dimensions": [
+    1920,
+    1080
+  ],
+  "source_crop": [
+    0,
+    446,
+    720,
+    851
+  ],
+  "colors": {
+    "white": "#F5F5F5",
+    "green": "#03EA00",
+    "background": "#000000"
+  },
+  "stretching": false,
+  "fixed_crop_across_sequence": true,
+  "stroke": "thin, antialiased",
+  "missing": [],
+  "bad_files": [],
+  "modes": {
+    "RGB": 597
+  },
+  "total_bytes": 103794492,
+  "sample_exact_color_counts": {
+    "001.webp": {
+      "black_exact": 2073600,
+      "green_exact": 0,
+      "white_exact": 0
+    },
+    "100.webp": {
+      "black_exact": 2046848,
+      "green_exact": 411,
+      "white_exact": 0
+    },
+    "200.webp": {
+      "black_exact": 2010023,
+      "green_exact": 2779,
+      "white_exact": 0
+    },
+    "300.webp": {
+      "black_exact": 1870127,
+      "green_exact": 3341,
+      "white_exact": 878
+    },
+    "400.webp": {
+      "black_exact": 1730797,
+      "green_exact": 4427,
+      "white_exact": 1999
+    },
+    "500.webp": {
+      "black_exact": 1721575,
+      "green_exact": 4772,
+      "white_exact": 1900
+    },
+    "600.webp": {
+      "black_exact": 1722073,
+      "green_exact": 4798,
+      "white_exact": 1872
+    }
+  },
+  "verified_readable_frames": 600
+}
