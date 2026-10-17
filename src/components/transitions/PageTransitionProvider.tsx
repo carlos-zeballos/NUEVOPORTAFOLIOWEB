@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { gsap } from "gsap";
 import { PageTransitionContext } from "../../hooks/usePageTransition";
 import { PageTransitionOverlay } from "./PageTransitionOverlay";
+import { scrollController, scrollToTarget } from "../scroll/scrollToTarget";
 
 const WHITE_ORDER = [3, 0, 6, 2, 8, 4, 1, 7, 5];
 const BLACK_ORDER = [1, 5, 8, 3, 0, 6, 2, 7, 4];
@@ -9,13 +10,7 @@ const BLACK_ORDER = [1, 5, 8, 3, 0, 6, 2, 7, 4];
 function jumpToTarget(target: string) {
   const targetElement = document.querySelector<HTMLElement>(target);
   if (!targetElement) return false;
-
-  const root = document.documentElement;
-  const previousScrollBehavior = root.style.scrollBehavior;
-  root.style.scrollBehavior = "auto";
-  const top = targetElement.getBoundingClientRect().top + window.scrollY;
-  window.scrollTo({ top, left: 0, behavior: "auto" });
-  root.style.scrollBehavior = previousScrollBehavior;
+  scrollToTarget(targetElement, { immediate: true });
   return true;
 }
 
@@ -45,6 +40,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     if (whitePanels) gsap.set(whitePanels, { yPercent: 100 });
     if (blackPanels) gsap.set(blackPanels, { yPercent: -100 });
     document.body.style.overflow = previousOverflow;
+    scrollController.lenis?.start();
     transitioningRef.current = false;
     setIsTransitioning(false);
     timelineRef.current = null;
@@ -77,6 +73,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     transitioningRef.current = true;
     setIsTransitioning(true);
     document.body.style.overflow = "hidden";
+    scrollController.lenis?.stop();
     overlay.style.pointerEvents = "auto";
     gsap.set(overlay, { autoAlpha: 1 });
     gsap.set(whitePanels, { yPercent: 100, force3D: true });
@@ -144,6 +141,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => {
     timelineRef.current?.kill();
     document.body.style.overflow = "";
+    scrollController.lenis?.start();
   }, []);
 
   const value = useMemo(() => ({ transitionTo, isTransitioning }), [transitionTo, isTransitioning]);

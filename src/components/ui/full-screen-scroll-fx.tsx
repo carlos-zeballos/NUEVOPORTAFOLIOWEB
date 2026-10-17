@@ -2,6 +2,8 @@ import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, us
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./full-screen-scroll-fx.css";
+import { scrollToTarget } from "../scroll/scrollToTarget";
+import { flashAccent, revealWords, wordsHidden } from "../motion/title-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -53,60 +55,30 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
 }, forwardedRef) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const titleRefs = useRef<HTMLDivElement[]>([]);
-  const bgRefs = useRef<HTMLDivElement[]>([]);
+  const titleRefs = useRef<HTMLHeadingElement[]>([]);
+  const bgRefs = useRef<HTMLHeadingElement[]>([]);
   const leftTrackRef = useRef<HTMLDivElement>(null);
   const rightTrackRef = useRef<HTMLDivElement>(null);
   const internalIndexRef = useRef(clamp(initialIndex, sections.length - 1));
   const [internalIndex, setInternalIndex] = useState(internalIndexRef.current);
   const index = typeof currentIndex === "number" ? clamp(currentIndex, sections.length - 1) : internalIndex;
   const previousRef = useRef(index);
-  const sectionActiveRef = useRef(false);
-  const snappingRef = useRef(false);
-  const snapTimerRef = useRef<number>(0);
-  const snapStartedAtRef = useRef(0);
-  const scrollTweenRef = useRef<gsap.core.Tween | null>(null);
   const revealedRef = useRef(false);
   const waitingForBarsRef = useRef(false);
   const motionOff = reduceMotion ?? false;
 
-  const setIndex = (next: number) => {
-    const safe = clamp(next, sections.length - 1);
-    if (safe === internalIndexRef.current) return;
-    previousRef.current = internalIndexRef.current;
-    internalIndexRef.current = safe;
-    if (typeof currentIndex !== "number") setInternalIndex(safe);
-    onIndexChange?.(safe);
-  };
-
   const goTo = (next: number) => {
     const safe = clamp(next, sections.length - 1);
     const root = rootRef.current;
-    if (!root) return;
+    if (!root || safe === internalIndexRef.current) return;
     const rootTop = root.getBoundingClientRect().top + window.scrollY;
-    const top = rootTop + (root.offsetHeight - window.innerHeight) * (safe / Math.max(1, sections.length - 1));
-    snappingRef.current = true;
-    snapStartedAtRef.current = performance.now();
-    window.clearTimeout(snapTimerRef.current);
-    scrollTweenRef.current?.kill();
-    if (motionOff) {
-      window.scrollTo({ top, behavior: "auto" });
-    } else {
-      const scrollState = { value: window.scrollY };
-      scrollTweenRef.current = gsap.to(scrollState, {
-        value: top,
-        duration: (durations.snap ?? 800) / 1000,
-        ease: "power3.inOut",
-        overwrite: true,
-        onUpdate: () => window.scrollTo(0, scrollState.value),
-        onComplete: () => {
-          window.clearTimeout(snapTimerRef.current);
-          snapTimerRef.current = window.setTimeout(() => { snappingRef.current = false; }, 160);
-        },
-      });
-    }
-    setIndex(safe);
-    if (motionOff) snapTimerRef.current = window.setTimeout(() => { snappingRef.current = false; }, 30);
+    const scrollable = Math.max(0, root.offsetHeight - window.innerHeight);
+    const top = rootTop + scrollable * (safe / Math.max(1, sections.length - 1));
+    scrollToTarget(top, {
+      immediate: motionOff,
+      duration: (durations.snap ?? 700) / 1000,
+      lock: !motionOff,
+    });
   };
 
   useImperativeHandle(apiRef, () => ({ next: () => goTo(index + 1), prev: () => goTo(index - 1), goTo, getIndex: () => internalIndexRef.current, refresh: () => ScrollTrigger.refresh() }));
@@ -114,62 +86,103 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    const last = Math.max(1, sections.length - 1);
+    const proxy = { raw: typeof currentIndex === "number" ? clamp(currentIndex, last) : internalIndexRef.current };
+
+    const apply = () => {
+      const raw = proxy.raw;
+      titleRefs.current.forEach((title, i) => {
+        const distance = raw - i;
+        const fade = clamp((Math.abs(distance) - 0.22) / 0.24, 1);
+        const opacity = 1 - fade;
+        title.style.opacity = String(opacity);
+        title.style.visibility = opacity > 0.001 ? "visible" : "hidden";
+        title.style.transform = `translate3d(0, ${-distance * 38}%, 0)`;
+      });
+      bgRefs.current.forEach((bg, i) => {
+        const opacity = 1 - clamp((Math.abs(raw - i) - 0.2) / 0.6, 1);
+        bg.style.opacity = String(opacity);
+        bg.style.visibility = opacity > 0.001 ? "visible" : "hidden";
+        bg.style.transform = `scale(${1 + Math.min(1, Math.abs(raw - i)) * 0.05})`;
+      });
+      [leftTrackRef.current, rightTrackRef.current].forEach((track) => {
+        if (track) track.style.transform = `translate3d(0, ${-raw * 3.4}rem, 0)`;
+      });
+    };
+
+    let settledFrom: number | null = null;
+    const follow = (raw: number) => {
+      if (settledFrom !== null && Math.abs(raw - settledFrom) < 0.04) return;
+      settledFrom = null;
+      gsap.to(proxy, { raw, duration: motionOff ? 0 : 0.45, ease: "power3.out", overwrite: true, onUpdate: apply });
+      const next = clamp(Math.round(raw), last);
+      if (next !== internalIndexRef.current) {
+        previousRef.current = internalIndexRef.current;
+        internalIndexRef.current = next;
+        setInternalIndex(next);
+        onIndexChange?.(next);
+      }
+    };
+
+    apply();
+    if (typeof currentIndex === "number") {
+      follow(clamp(currentIndex, last));
+      return;
+    }
+
+    let settleTimer = 0;
+    const settle = (self: ScrollTrigger) => {
+      settledFrom = self.progress * last;
+      const target = Math.round(settledFrom);
+      gsap.to(proxy, { raw: target, duration: motionOff ? 0 : 0.5, ease: "power2.out", overwrite: true, onUpdate: apply });
+    };
+
     const trigger = ScrollTrigger.create({
       trigger: root,
       start: "top top",
       end: "bottom bottom",
-      onEnter: () => { sectionActiveRef.current = true; setIndex(0); },
-      onEnterBack: () => { sectionActiveRef.current = true; setIndex(sections.length - 1); },
-      onLeave: () => { sectionActiveRef.current = false; },
-      onLeaveBack: () => { sectionActiveRef.current = false; },
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        follow(self.progress * last);
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(() => settle(self), 180);
+      },
+      onRefresh: (self) => { proxy.raw = self.progress * last; apply(); },
     });
-    const handleWheel = (event: WheelEvent) => {
-      if (!sectionActiveRef.current || Math.abs(event.deltaY) < 8) return;
-      if (snappingRef.current) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        window.clearTimeout(snapTimerRef.current);
-        const minimumAnimationTime = Math.max(0, (durations.snap ?? 800) - (performance.now() - snapStartedAtRef.current));
-        snapTimerRef.current = window.setTimeout(() => { snappingRef.current = false; }, Math.max(220, minimumAnimationTime));
-        return;
-      }
-      const direction = event.deltaY > 0 ? 1 : -1;
-      const current = internalIndexRef.current;
-      if ((direction > 0 && current === sections.length - 1) || (direction < 0 && current === 0)) {
-        sectionActiveRef.current = false;
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      goTo(current + direction);
-    };
-    window.addEventListener("wheel", handleWheel, { passive: false, capture: true });
     return () => {
+      window.clearTimeout(settleTimer);
       trigger.kill();
-      window.removeEventListener("wheel", handleWheel, { capture: true });
-      window.clearTimeout(snapTimerRef.current);
-      scrollTweenRef.current?.kill();
+      gsap.killTweensOf(proxy);
     };
-  }, [sections.length]);
+  }, [currentIndex, onIndexChange, sections.length, motionOff]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
     const stage = stageRef.current;
     if (!root || !stage) return;
     const nodes = stage.querySelectorAll(".fx-header,.fx-content,.fx-footer");
-    gsap.set(nodes, { autoAlpha: 0, y: 24 });
+    const header = stage.querySelector<HTMLElement>(".fx-header");
+    const headerWords = stage.querySelectorAll(".fx-header [data-word]");
+    const hide = () => {
+      gsap.set(nodes, { autoAlpha: 0, y: 24 });
+      if (motionOff) return;
+      gsap.set(headerWords, wordsHidden);
+      if (header) gsap.set(header, { "--fx-line": 0 });
+    };
+    hide();
     const reveal = () => {
       if (revealedRef.current) return;
       revealedRef.current = true;
       gsap.to(nodes, { autoAlpha: 1, y: 0, duration: motionOff ? .01 : .85, stagger: motionOff ? 0 : .1, ease: "expo.out" });
+      if (motionOff) return;
+      if (header) gsap.to(header, { "--fx-line": 1, duration: .7, ease: "power3.inOut" });
+      revealWords(headerWords, .2).eventCallback("onComplete", () => { flashAccent(stage.querySelectorAll(".fx-header [data-word-accent]")); });
     };
     const prepare = (event: Event) => {
       if ((event as CustomEvent<{ target: string }>).detail?.target !== "#layered-section") return;
       waitingForBarsRef.current = true;
       revealedRef.current = false;
-      gsap.set(nodes, { autoAlpha: 0, y: 24 });
+      hide();
     };
     const complete = (event: Event) => {
       if ((event as CustomEvent<{ target: string }>).detail?.target === "#layered-section") {
@@ -188,22 +201,11 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
     };
   }, [motionOff]);
 
-  useLayoutEffect(() => {
-    const duration = motionOff ? .01 : durations.change ?? .75;
-    const previous = previousRef.current;
-    const direction = index >= previous ? 1 : -1;
-    const incoming = titleRefs.current[index];
-    const outgoing = titleRefs.current[previous];
-    const incomingBg = bgRefs.current[index];
-    const outgoingBg = bgRefs.current[previous];
-    if (outgoing && outgoing !== incoming) gsap.to(outgoing, { autoAlpha: 0, yPercent: -18 * direction, filter: "blur(8px)", duration: duration * .55, ease: "power3.in" });
-    if (incoming) gsap.fromTo(incoming, { autoAlpha: 0, yPercent: 28 * direction, filter: "blur(9px)" }, { autoAlpha: 1, yPercent: 0, filter: "blur(0px)", duration, ease: "expo.out" });
-    if (outgoingBg && outgoingBg !== incomingBg) gsap.to(outgoingBg, { autoAlpha: 0, scale: 1.035, duration, ease: "power2.out" });
-    if (incomingBg) gsap.fromTo(incomingBg, { autoAlpha: 0, scale: 1.06 }, { autoAlpha: 1, scale: 1, duration: duration * 1.15, ease: "power2.out" });
-    gsap.to([leftTrackRef.current, rightTrackRef.current], { y: `${-index * 3.4}rem`, duration, ease: "power3.out" });
-  }, [index, motionOff, durations.change]);
-
   useEffect(() => { internalIndexRef.current = index; }, [index]);
+
+  useEffect(() => {
+    bgRefs.current.forEach((bg) => bg.querySelector("img")?.decode().catch(() => undefined));
+  }, [sections]);
 
   const vars = {
     "--fx-text": colors.text ?? "rgba(245,248,246,.94)",
@@ -214,16 +216,16 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
   } as CSSProperties;
 
   return (
-    <div ref={(node) => { rootRef.current = node; if (typeof forwardedRef === "function") forwardedRef(node); else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLDivElement | null>).current = node; }} className={`fx ${className ?? ""}`} style={{ ...vars, height: `${Math.max(2, sections.length) * 100}svh` }} aria-label={ariaLabel}>
+    <div ref={(node) => { rootRef.current = node; if (typeof forwardedRef === "function") forwardedRef(node); else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLDivElement | null>).current = node; }} className={`fx ${className ?? ""}`} style={{ ...vars, height: `calc(100svh + ${Math.max(1, sections.length - 1)} * 85svh)` }} aria-label={ariaLabel}>
       <div ref={stageRef} className="fx-stage">
         <div className="fx-backgrounds" aria-hidden="true">
-          {sections.map((section, sectionIndex) => <div ref={(node) => { if (node) bgRefs.current[sectionIndex] = node; }} className={`fx-bg ${sectionIndex === index ? "active" : ""}`} key={section.id ?? sectionIndex}>{section.renderBackground?.(sectionIndex === index, sectionIndex === previousRef.current)}{section.background && <img src={section.background} alt="" />}<div className="fx-bg-overlay" /></div>)}
+          {sections.map((section, sectionIndex) => <div ref={(node) => { if (node) bgRefs.current[sectionIndex] = node; }} className={`fx-bg ${sectionIndex === index ? "active" : ""}`} key={section.id ?? sectionIndex}>{section.renderBackground?.(sectionIndex === index, sectionIndex === previousRef.current)}{section.background && <img src={section.background} alt="" decoding="async" />}<div className="fx-bg-overlay" /></div>)}
         </div>
         <div className="fx-gridlines" aria-hidden="true" />
-        {header && <header className="fx-header">{header}</header>}
+        {header && <h2 className="fx-header">{header}</h2>}
         <div className="fx-content">
           <div className="fx-side fx-left"><div ref={leftTrackRef}>{sections.map((section, i) => <button type="button" onClick={() => goTo(i)} className={i === index ? "active" : ""} key={`left-${section.id ?? i}`}>{section.leftLabel}</button>)}</div></div>
-          <div className="fx-center">{sections.map((section, i) => <div ref={(node) => { if (node) titleRefs.current[i] = node; }} className={`fx-title ${i === index ? "active" : ""}`} key={`title-${section.id ?? i}`}>{section.title}</div>)}</div>
+          <div className="fx-center">{sections.map((section, i) => <h3 ref={(node) => { if (node) titleRefs.current[i] = node; }} className={`fx-title ${i === index ? "active" : ""}`} key={`title-${section.id ?? i}`}>{section.title}</h3>)}</div>
           <div className="fx-side fx-right"><div ref={rightTrackRef}>{sections.map((section, i) => <button type="button" onClick={() => goTo(i)} className={i === index ? "active" : ""} key={`right-${section.id ?? i}`}>{section.rightLabel}</button>)}</div></div>
         </div>
         <footer className="fx-footer">{footer}<>{showProgress && <div className="fx-progress"><span>{String(index + 1).padStart(2, "0")}</span><i><b style={{ width: `${((index + 1) / sections.length) * 100}%` }} /></i><span>{String(sections.length).padStart(2, "0")}</span></div>}</></footer>

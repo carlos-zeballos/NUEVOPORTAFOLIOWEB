@@ -1,41 +1,39 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
-import { Facebook, Github, Instagram, Linkedin, Menu, MessageCircle } from "lucide-react";
+import { Github, Instagram, Linkedin, Menu, MessageCircle } from "lucide-react";
 import { gsap } from "gsap";
+import { CustomEase } from "gsap/CustomEase";
 import { usePageTransition } from "../hooks/usePageTransition";
+import { scrollToTarget } from "./scroll/scrollToTarget";
 import { EmeraldSentinelScene } from "./three/EmeraldSentinelScene";
 import { HeroBackground } from "./HeroBackground";
+import { CursorTag } from "./ui/cursor-tag";
 import "./HeroSection.css";
+
+gsap.registerPlugin(CustomEase);
+CustomEase.create("heroInertialDrift", "M0,0 C0.03,0.62 0.07,0.94 0.16,0.992 C0.38,0.994 0.72,0.997 1,1");
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const logoUrl = new URL("../public/Assets/ChatGPT Image Aug 11, 2026, 05_13_49 AM.png", import.meta.url).href;
 
-function RevealLetters({ text }: { text: string }) {
-  return (
-    <span className="nk-question-line" data-question-line>
-      {Array.from(text).map((character, index) => (
-        <span className="nk-question-letter" data-question-letter key={`${character}-${index}`}>
-          {character === " " ? "\u00A0" : character}
-        </span>
-      ))}
-    </span>
-  );
+function AnimatedLine({ children }: { children: string }) {
+  return <span className="nk-question-line" data-question-line>{children}</span>;
 }
 
 export function HeroSection() {
   const { transitionTo, isTransitioning } = usePageTransition();
   const heroRef = useRef<HTMLElement>(null);
   const cursorGlowRef = useRef<HTMLDivElement>(null);
-  const entryLockedRef = useRef(true);
+  const exploreRef = useRef<HTMLButtonElement>(null);
+  const profileRef = useRef<HTMLAnchorElement>(null);
 
-  const enterExperience = () => {
-    entryLockedRef.current = false;
-    delete document.documentElement.dataset.heroLocked;
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
-    document.documentElement.style.overscrollBehavior = "";
-    window.dispatchEvent(new CustomEvent("hero-scroll:unlock"));
-    transitionTo("#layered-section");
+  const enterExperience = () => transitionTo("#servicios");
+
+  const onMenu = () => {
+    const heroBottom = heroRef.current?.getBoundingClientRect().bottom ?? 0;
+    if (heroBottom > window.innerHeight * 0.35) enterExperience();
+    else scrollToTarget("#servicios");
   };
 
   useEffect(() => {
@@ -92,30 +90,22 @@ export function HeroSection() {
     const context = gsap.context(() => {
       const question = gsap.timeline()
         .set(".nk-walk-question", { autoAlpha: 1 })
-        .fromTo("[data-question-letter]", {
-          autoAlpha: 0,
-          yPercent: 125,
-          rotateX: -70,
-          filter: reducedMotion ? "none" : "blur(6px)",
+        .fromTo("[data-question-line]", {
+          x: (index) => reducedMotion ? 0 : (index === 0 ? -window.innerWidth * .82 : window.innerWidth * .82),
         }, {
-          autoAlpha: 1,
-          yPercent: 0,
-          rotateX: 0,
-          filter: "blur(0px)",
-          duration: reducedMotion ? .01 : .56,
-          stagger: reducedMotion ? 0 : .025,
-          ease: "expo.out",
+          x: (index) => index === 0 ? 9 : -9,
+          duration: reducedMotion ? .01 : 3.4,
+          ease: reducedMotion ? "none" : "heroInertialDrift",
         })
         .to("[data-question-line]", {
-          x: (index) => index === 0 ? 9 : -9,
           y: (index) => index === 0 ? 3 : -3,
-          duration: reducedMotion ? .01 : 4.25,
+          duration: reducedMotion ? .01 : 2.7,
           ease: "sine.inOut",
-        })
+        }, reducedMotion ? 0 : .6)
         .to(".nk-walk-question", {
           autoAlpha: 0, scale: .975,
           filter: reducedMotion ? "none" : "blur(7px)",
-          duration: reducedMotion ? .01 : .65,
+          duration: reducedMotion ? .01 : .5,
           ease: "power2.in",
         }, "-=.15");
       const reveal = gsap.timeline({ paused: true })
@@ -134,7 +124,7 @@ export function HeroSection() {
         scrambleText();
       };
       window.addEventListener("sentinel:stage-walk-complete", startReveal, { once: true });
-      const fallback = window.setTimeout(startReveal, 7600);
+      const fallback = window.setTimeout(startReveal, 5600);
       if (reducedMotion) reveal.progress(1);
       return () => {
         question.kill();
@@ -144,33 +134,7 @@ export function HeroSection() {
       };
     }, hero);
 
-    entryLockedRef.current = true;
-    document.documentElement.dataset.heroLocked = "true";
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    document.documentElement.style.overscrollBehavior = "none";
-    window.dispatchEvent(new CustomEvent("hero-scroll:lock"));
-
-    const blockScroll = (event: Event) => { if (entryLockedRef.current) event.preventDefault(); };
-    const blockScrollKeys = (event: KeyboardEvent) => {
-      if (entryLockedRef.current && ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) event.preventDefault();
-    };
-    window.addEventListener("wheel", blockScroll, { passive: false, capture: true });
-    window.addEventListener("touchmove", blockScroll, { passive: false, capture: true });
-    window.addEventListener("keydown", blockScrollKeys, { capture: true });
-
     return () => {
-      window.removeEventListener("wheel", blockScroll, { capture: true });
-      window.removeEventListener("touchmove", blockScroll, { capture: true });
-      window.removeEventListener("keydown", blockScrollKeys, { capture: true });
-      if (entryLockedRef.current) {
-        delete document.documentElement.dataset.heroLocked;
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-        document.documentElement.style.overscrollBehavior = "";
-        window.dispatchEvent(new CustomEvent("hero-scroll:unlock"));
-      }
       context.revert();
     };
   }, []);
@@ -184,38 +148,47 @@ export function HeroSection() {
       </motion.div>
       <div className="nk-video-shade" aria-hidden="true" />
 
-      <div className="nk-walk-question" aria-label="¿Buscas webs innovadoras?">
-        <RevealLetters text="¿Buscas" />
-        <RevealLetters text="webs innovadoras?" />
+      <div className="nk-walk-question" aria-label="¿Buscas una web innovadora?">
+        <AnimatedLine>¿Buscas</AnimatedLine>
+        <AnimatedLine>una web innovadora?</AnimatedLine>
       </div>
 
-      <motion.header className="nk-nav" initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }}>
-        <div className="nk-nav-left">
-          <a className="nk-brand" href="#inicio" aria-label="Zebware, inicio">
-            <img src={logoUrl} alt="Zebware" />
-          </a>
-          <button className="nk-menu" type="button" onClick={enterExperience} disabled={isTransitioning}><span><Menu size={15} strokeWidth={1.8} /></span><span className="nk-menu-label">Menú</span></button>
-          <div className="nk-tags"><span>Desarrollo digital</span><span>Innovación creativa</span></div>
-        </div>
-      </motion.header>
+      {typeof document !== "undefined" && createPortal(
+        <motion.header className="nk-nav" initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }}>
+          <div className="nk-nav-left">
+            <a className="nk-brand" href="#inicio" aria-label="Zebware, inicio">
+              <img src={logoUrl} alt="Zebware" />
+            </a>
+            <button className="nk-menu" type="button" onClick={onMenu} disabled={isTransitioning}><span><Menu size={15} strokeWidth={1.8} /></span><span className="nk-menu-label">Menú</span></button>
+            <div className="nk-tags"><span>Desarrollo digital</span><span>Innovación creativa</span></div>
+          </div>
+        </motion.header>,
+        document.body,
+      )}
 
       <div className="nk-hero-content">
         <div className="nk-copy">
-          <p className="nk-eyebrow" data-hero-reveal><b>01</b><span>/</span> <span data-scramble="INICIO">INICIO</span></p>
-          <h1 aria-label="Nosotros la programamos" data-hero-reveal>
-            <span className="nk-title-eleva" data-scramble="NOSOTROS">NOSOTROS</span>
-            <span className="nk-title-brand"><em data-scramble="LA PROGRAMAMOS">LA PROGRAMAMOS</em><span className="nk-title-dot">.</span></span>
+          <h1 aria-label="Desarrollo web en Perú: nosotros la diseñamos" data-hero-reveal>
+            <span className="nk-title-kicker"><span data-scramble="DESARROLLO WEB EN PERÚ">DESARROLLO WEB EN PERÚ</span></span>{" "}
+            <span className="nk-title-eleva" data-scramble="NOSOTROS">NOSOTROS</span>{" "}
+            <span className="nk-title-brand"><em data-scramble="LA">LA</em> <span className="nk-title-last"><em data-scramble="DISEÑAMOS">DISEÑAMOS</em><span className="nk-title-dot">.</span></span></span>
           </h1>
-          <p className="nk-subtitle" data-hero-reveal>Zebware, compañía de software en Arequipa, Perú, donde nos enfocamos en la experiencia y los resultados.</p>
-          <button className="nk-cta" type="button" onClick={enterExperience} disabled={isTransitioning} data-hero-reveal>
-            <span>Explorar web</span><span className="nk-cta-arrow" aria-hidden="true">→</span>
-          </button>
+          <p className="nk-subtitle" data-hero-reveal>Zebware, compañía de software de Arequipa para todo el Perú, donde nos enfocamos en la experiencia y los resultados.</p>
+          <div className="nk-ctas" data-hero-reveal>
+            <button ref={exploreRef} className="nk-cta" type="button" onClick={enterExperience} disabled={isTransitioning}>
+              <span>Explorar web</span><span className="nk-cta-arrow" aria-hidden="true">→</span>
+            </button>
+            <a ref={profileRef} className="nk-cta nk-cta--quiet" href="https://www.linkedin.com/in/carlos-zeballos-28500a202/" target="_blank" rel="noreferrer">
+              <span>Perfil profesional</span><span className="nk-cta-arrow" aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <CursorTag targetRef={exploreRef} className="bg-[#03EA00] text-black">Ir a<br />servicios</CursorTag>
+          <CursorTag targetRef={profileRef} className="bg-[#03EA00] text-black">Conoce a<br />Carlos</CursorTag>
           <nav className="nk-socials" aria-label="Redes sociales de Zebware" data-hero-reveal>
-            <a href="https://wa.me/" target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle aria-hidden="true" /></a>
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram aria-hidden="true" /></a>
-            <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin aria-hidden="true" /></a>
-            <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub"><Github aria-hidden="true" /></a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook aria-hidden="true" /></a>
+            <a href="https://wa.me/51946691999" target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle aria-hidden="true" /></a>
+            <a href="https://instagram.com/zebware.pe" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram aria-hidden="true" /></a>
+            <a href="https://www.linkedin.com/in/carlos-zeballos-28500a202/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin aria-hidden="true" /></a>
+            <a href="https://github.com/carlos-zeballos" target="_blank" rel="noreferrer" aria-label="GitHub"><Github aria-hidden="true" /></a>
           </nav>
         </div>
       </div>

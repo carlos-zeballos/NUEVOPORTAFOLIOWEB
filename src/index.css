@@ -13,7 +13,7 @@
     --ring: 119 99% 46%; --radius: 0.5rem; --nav-button: 0 0% 18%; --hero-bg: 0 0% 8%;
   }
   * { @apply border-border; }
-  html { scroll-behavior: smooth; background: hsl(var(--hero-bg)); }
+  html { background: hsl(var(--hero-bg)); }
   body { @apply m-0 bg-background font-sora text-foreground antialiased; }
   button, a { -webkit-tap-highlight-color: transparent; }
 }
@@ -28,6 +28,26 @@
   75% { opacity: 1; }
   100% { transform: translateY(13px); opacity: 0; }
 }
+
+.text-shine {
+  background: linear-gradient(110deg, hsl(var(--primary)) 42%, #eaffdf 50%, hsl(var(--primary)) 58%) 0 0 / 250% 100% repeat-x;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shine 5.5s ease-in-out 1.6s infinite;
+}
+
+@keyframes text-shine {
+  0% { background-position: 130% 0; }
+  38%, 100% { background-position: -30% 0; }
+}
+
+@keyframes line-pulse {
+  0%, 100% { opacity: .6; box-shadow: 0 0 0 rgba(3, 234, 0, 0); }
+  50% { opacity: 1; box-shadow: 0 0 12px rgba(3, 234, 0, .7); }
+}
+
+.line-pulse { animation: line-pulse 2.6s ease-in-out infinite; }
 
 .mouse-wheel-dot {
   animation: mouse-wheel 1.35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -104,4 +124,16 @@ main { position: relative; z-index: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .ambient-grain { animation: none; }
+}
+
+@keyframes footer-marquee {
+  to { transform: translate3d(-100%, 0, 0); }
+}
+
+.footer-marquee {
+  animation: footer-marquee 38s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-marquee { animation: none; }
 }

@@ -1,39 +1,34 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+type ServiceRowProps = { number: string; title: string; description: string; variant: number };
 
-export function ServiceRow({ number, title, variant }: { number: string; title: string; variant: number }) {
+export function ServiceRow({ number, title, description, variant }: ServiceRowProps) {
   const rowRef = useRef<HTMLAnchorElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
   const wipeRef = useRef<HTMLSpanElement>(null);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => setMounted(true), []);
+
+  useLayoutEffect(() => {
     const row = rowRef.current;
     const label = labelRef.current;
     if (!row || !label) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const context = gsap.context(() => {
-      if (reduced) return;
-      gsap.set("[data-number], [data-title], [data-arrow]", { autoAlpha: 0 });
-      gsap.timeline({ scrollTrigger: { trigger: row, start: "top 88%", once: true } })
-        .from("[data-divider]", { scaleX: 0, transformOrigin: "left", duration: 0.45, ease: "power3.out" })
-        .to("[data-service-block]", { scaleX: 1, transformOrigin: "left center", duration: 0.52, ease: "expo.inOut" }, 0.08)
-        .set("[data-number], [data-title], [data-arrow]", { autoAlpha: 1 }, 0.34)
-        .to("[data-service-block]", { scaleX: 0, transformOrigin: "right center", duration: 0.52, ease: "expo.inOut" }, 0.38);
-    }, row);
+    gsap.set(label, { autoAlpha: 0, scale: 0.8 });
 
     const xTo = gsap.quickTo(label, "x", { duration: 0.2, ease: "power3.out" });
     const yTo = gsap.quickTo(label, "y", { duration: 0.2, ease: "power3.out" });
     const titleX = gsap.quickTo(titleRef.current, "x", { duration: 0.35, ease: "power3.out" });
     const move = (event: PointerEvent) => {
-      xTo(event.clientX - row.getBoundingClientRect().left + 15);
-      yTo(event.clientY - row.getBoundingClientRect().top + 15);
+      xTo(event.clientX + 15);
+      yTo(event.clientY + 15);
       if (variant === 4) titleX(((event.clientX - row.getBoundingClientRect().left) / row.clientWidth - 0.5) * 20);
     };
-    const enter = () => {
+    const enter = (event: PointerEvent) => {
+      gsap.set(label, { x: event.clientX + 15, y: event.clientY + 15 });
       gsap.to(label, { autoAlpha: 1, scale: 1, duration: 0.22 });
       gsap.to(titleRef.current, { x: variant === 4 ? 0 : 8, scaleX: variant === 3 ? 1.02 : 1, duration: 0.32 });
       if (variant === 2) gsap.to(wipeRef.current, { scaleX: 1, transformOrigin: "left center", duration: 0.35, ease: "power2.out" });
@@ -50,19 +45,22 @@ export function ServiceRow({ number, title, variant }: { number: string; title: 
       row.removeEventListener("pointermove", move);
       row.removeEventListener("pointerenter", enter);
       row.removeEventListener("pointerleave", leave);
-      context.revert();
+      gsap.set(label, { autoAlpha: 0 });
     };
-  }, [variant]);
+  }, [variant, mounted]);
 
   return (
-    <a ref={rowRef} href="#iniciativa" className={`group relative grid min-h-[145px] grid-cols-[3.5rem_1fr_auto] items-center gap-4 overflow-hidden px-6 transition-colors duration-300 sm:grid-cols-[6rem_1fr_auto] sm:px-10 lg:min-h-[clamp(190px,23.5vh,215px)] lg:grid-cols-[16.5rem_1fr_auto] lg:px-4 ${variant === 2 ? "" : "hover:bg-primary"}`}>
-      <span data-divider className="absolute inset-x-0 top-0 z-20 h-px bg-[#242424]" />
+    <a ref={rowRef} data-service-row href="#contacto" className={`group relative grid min-h-[4rem] flex-1 grid-cols-[3.25rem_1fr_auto] items-center gap-4 overflow-hidden px-6 py-[clamp(0.4rem,1.2svh,0.9rem)] transition-colors duration-300 sm:grid-cols-[6rem_1fr_auto] sm:px-10 lg:grid-cols-[16.5rem_1fr_auto] lg:gap-8 lg:px-4 ${variant === 2 ? "" : "hover:bg-primary"}`}>
+      <span data-divider className="absolute inset-x-0 top-0 z-20 h-px origin-left bg-white/15" />
       <span ref={wipeRef} className="absolute inset-0 z-0 origin-left scale-x-0 bg-primary" />
-      <span data-number className="relative z-10 text-sm font-semibold text-primary opacity-0 group-hover:text-black">({number})</span>
-      <span className="relative z-10 overflow-hidden"><span ref={titleRef} data-title className="block text-[clamp(1.7rem,5vw,6rem)] font-medium uppercase leading-none tracking-[-0.065em] text-white opacity-0 group-hover:text-black">{title}</span></span>
-      <span data-arrow className="relative z-10 text-3xl text-white transition-transform duration-300 group-hover:-rotate-45 group-hover:text-black sm:text-5xl">→</span>
-      <span data-service-block className="pointer-events-none absolute inset-y-[18%] left-0 z-20 w-full origin-left scale-x-0 bg-primary shadow-[0_0_28px_rgba(3,234,0,.22)]" />
-      <span ref={labelRef} className="pointer-events-none absolute left-0 top-0 z-30 hidden h-20 w-20 place-items-center bg-black text-center text-[10px] font-bold uppercase leading-tight text-white opacity-0 md:grid">Saber<br />más</span>
+      <span data-row-content className="relative z-10 font-mono text-sm font-semibold text-primary group-hover:text-black lg:text-base">({number})</span>
+      <span data-row-content className="relative z-10 min-w-0">
+        <h3 className="block overflow-hidden"><span ref={titleRef} className="block text-[clamp(1.4rem,min(3.3vw,5svh),3.4rem)] font-semibold uppercase leading-none tracking-[-0.05em] text-white group-hover:text-black">{title}</span></h3>
+        <span className="mt-[clamp(0.2rem,0.8svh,0.5rem)] block max-w-[34rem] text-xs leading-snug text-white/50 group-hover:text-black/70 sm:text-sm">{description}</span>
+      </span>
+      <span data-row-content className="relative z-10 text-3xl text-white transition-transform duration-300 group-hover:-rotate-45 group-hover:text-black sm:text-5xl">→</span>
+      <span data-bar className="pointer-events-none absolute inset-0 z-20 origin-left scale-x-0 bg-primary" aria-hidden="true" />
+      {mounted && createPortal(<span ref={labelRef} className="pointer-events-none fixed left-0 top-0 z-[45] hidden h-20 w-20 place-items-center bg-black text-center text-[10px] font-bold uppercase leading-tight text-white opacity-0 md:grid" aria-hidden="true">Saber<br />más</span>, document.body)}
     </a>
   );
 }

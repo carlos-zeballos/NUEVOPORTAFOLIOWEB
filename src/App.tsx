@@ -2,8 +2,11 @@ import { HeroSection } from "./components/HeroSection";
 import { LayeredTextSection } from "./components/sections/LayeredTextSection";
 import { PageTransitionProvider } from "./components/transitions/PageTransitionProvider";
 import { SmoothScroll } from "./components/scroll/SmoothScroll";
-import { PanelOverlayTransition } from "./components/scroll/PanelOverlayTransition";
 import { ServicesSection } from "./components/sections/ServicesSection";
+import { ClosingSection } from "./components/sections/ClosingSection";
+import { FaqSection } from "./components/sections/FaqSection";
+import { ContactSection } from "./components/sections/ContactSection";
+import { SiteFooter } from "./components/SiteFooter";
 import { AmbientParallax } from "./components/motion/AmbientParallax";
 
 export default function App() {
@@ -14,12 +17,13 @@ export default function App() {
         <AmbientParallax />
         <main>
           <HeroSection />
+          <ServicesSection />
+          <ClosingSection />
           <LayeredTextSection />
-          <PanelOverlayTransition
-            previous={<div className="h-full w-full bg-[#030504]" aria-hidden="true" />}
-            next={<ServicesSection />}
-          />
+          <ContactSection />
+          <FaqSection />
         </main>
+        <SiteFooter />
       </div>
     </PageTransitionProvider>
   );
