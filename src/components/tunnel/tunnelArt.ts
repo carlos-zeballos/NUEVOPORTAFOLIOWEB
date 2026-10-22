@@ -125,11 +125,28 @@ export function drawArt(ctx: Ctx, size: number, seed: number) {
   ctx.restore();
 }
 
+/** Halves the crop step by step: a single large drawImage downscale aliases, and the tunnel motion turns that into shimmer. */
 function drawPhoto(ctx: Ctx, size: number, image: HTMLImageElement) {
   const ratio = image.naturalWidth / image.naturalHeight;
   const sw = ratio > 1 ? image.naturalHeight : image.naturalWidth;
   const sx = ratio > 1 ? (image.naturalWidth - sw) / 2 : 0;
-  ctx.drawImage(image, sx, 0, sw, sw, 0, 0, size, size);
+  let source: CanvasImageSource = image;
+  let x = sx;
+  let side = sw;
+  while (side > size * 2) {
+    const next = Math.ceil(side / 2);
+    const step = document.createElement("canvas");
+    step.width = step.height = next;
+    const stepCtx = step.getContext("2d")!;
+    stepCtx.imageSmoothingQuality = "high";
+    stepCtx.drawImage(source, x, 0, side, side, 0, 0, next, next);
+    source = step;
+    x = 0;
+    side = next;
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(source, x, 0, side, side, 0, 0, size, size);
 }
 
 /** Tiles [0, ATLAS_TILES - photos.length) are generated art; the remaining ones hold the photos. */
@@ -157,13 +174,21 @@ export function createTunnelAtlas(photos: string[], tile: number) {
   for (let i = 0; i < ATLAS_TILES; i += 1) at(i, (c) => drawArt(c, tile, i + 1));
 
   let disposed = false;
+  let uploadFrame = 0;
+  const scheduleUpload = () => {
+    if (uploadFrame) return;
+    uploadFrame = requestAnimationFrame(() => {
+      uploadFrame = 0;
+      texture.needsUpdate = true;
+    });
+  };
   photos.forEach((src, index) => {
     const image = new Image();
     image.decoding = "async";
     image.onload = () => {
       if (disposed) return;
       at(firstPhoto + index, (c) => drawPhoto(c, tile, image));
-      texture.needsUpdate = true;
+      scheduleUpload();
     };
     image.src = src;
   });
@@ -173,6 +198,7 @@ export function createTunnelAtlas(photos: string[], tile: number) {
     firstPhoto,
     dispose: () => {
       disposed = true;
+      cancelAnimationFrame(uploadFrame);
       texture.dispose();
     },
   };

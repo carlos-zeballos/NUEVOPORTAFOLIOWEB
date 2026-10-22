@@ -6,10 +6,8 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { heroSignals, onHeroRevealChange, onHeroRunningChange } from "../hero/heroSignals";
 import { introPhases } from "../tunnel/tunnelConfig";
 
-const stageWalkUrl = new URL(
-  "../../public/Assets/Meshy_AI_Emerald_Sentinel_biped/Meshy_AI_Emerald_Sentinel_biped_Animation_Stage_Walk_withSkin.glb",
-  import.meta.url,
-).href;
+/** Stage Walk export with a 1024 WebP texture and meshopt geometry (decoded by useGLTF's built-in MeshoptDecoder). */
+const stageWalkUrl = new URL("../../public/Assets/models/emerald-sentinel.glb", import.meta.url).href;
 
 const walkSpeed = 1.05;
 /** After the walk the robot holds its side pose and, every few seconds, calmly shifts its weight and looks at the viewer. */

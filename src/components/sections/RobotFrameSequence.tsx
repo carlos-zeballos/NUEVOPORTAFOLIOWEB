@@ -4,7 +4,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const videoSource = new URL("../../public/Assets/firefly-scroll-desktop.webm", import.meta.url).href;
+/** First seconds of firefly-scroll-desktop, keyframe every 6 frames so scroll seeking stays smooth. */
+const videoSource = new URL("../../public/Assets/robot-scroll.webm", import.meta.url).href;
 const sequenceLimit = 6;
 const message = "Usamos el ingenio humano y la inteligencia artificial para darte el mejor resultado.";
 const greenWords = new Set(["ingenio", "inteligencia", "resultado."]);
@@ -66,7 +67,7 @@ export function RobotFrameSequence() {
     };
 
     video.addEventListener("loadedmetadata", prepareVideo);
-    video.load();
+    if (video.readyState >= 1) prepareVideo();
 
     const context = gsap.context(() => {
       messageTimeline = gsap.timeline({ paused: true }).fromTo(

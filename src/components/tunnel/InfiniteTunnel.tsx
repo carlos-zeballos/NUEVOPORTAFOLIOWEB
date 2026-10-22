@@ -128,7 +128,8 @@ const panelFragment = /* glsl */ `
     float ratio = vSize.x / vSize.y;
     uv = ratio > 1.0 ? vec2(uv.x, (uv.y - 0.5) / ratio + 0.5) : vec2((uv.x - 0.5) * ratio + 0.5, uv.y);
     vec2 tile = vec2(mod(vTile, uGrid), uGrid - 1.0 - floor(vTile / uGrid));
-    vec3 col = texture2D(uAtlas, (tile + clamp(uv, 0.004, 0.996)) / uGrid).rgb;
+    float inset = clamp(max(fwidth(uv.x), fwidth(uv.y)) * 1.5, 0.004, 0.1);
+    vec3 col = texture2D(uAtlas, (tile + clamp(uv, inset, 1.0 - inset)) / uGrid).rgb;
     float aa = fwidth(d);
     col *= 1.0 - smoothstep(-aa * 2.5, 0.0, d) * 0.55;
     float luma = dot(col, vec3(0.299, 0.587, 0.114));
@@ -252,8 +253,13 @@ function TunnelScene() {
   const motion = useRef({ travel: 0, speed: 0, follow: 0, born: -1 });
   const baseFov = layout.mobile ? tunnelConfig.fov.mobile : tunnelConfig.fov.desktop;
 
+  const maxAnisotropy = useThree((state) => state.gl.capabilities.getMaxAnisotropy());
   const atlas = useMemo(() => createTunnelAtlas(tunnelImages, layout.mobile ? 224 : 448), [layout.mobile]);
   useEffect(() => atlas.dispose, [atlas]);
+  useEffect(() => {
+    atlas.texture.anisotropy = Math.min(16, maxAnisotropy);
+    atlas.texture.needsUpdate = true;
+  }, [atlas, maxAnisotropy]);
 
   const uniforms = useMemo(
     () => ({
