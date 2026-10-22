@@ -13,7 +13,7 @@ import {
 } from "three";
 import { heroSignals, onHeroRevealChange, onHeroRunningChange } from "../hero/heroSignals";
 import { ATLAS_GRID, ATLAS_TILES, createTunnelAtlas } from "./tunnelArt";
-import { AUTO_FLY_MODE, introPhases, QUESTION_DELAY, TUNNEL_HIDDEN_AT, tunnelConfig, tunnelImages, tunnelPalette } from "./tunnelConfig";
+import { AUTO_FLY_MODE, introPhases, QUESTION_DELAY, TUNNEL_HIDDEN_AT, tunnelConfig, tunnelImages, tunnelImagesHD, tunnelPalette } from "./tunnelConfig";
 import { readTunnelScroll, useTunnelScroll } from "./useTunnelScroll";
 
 const FLOOR = 0;
@@ -251,7 +251,12 @@ function TunnelScene() {
   const baseFov = layout.mobile ? tunnelConfig.fov.mobile : tunnelConfig.fov.desktop;
 
   const maxAnisotropy = useThree((state) => state.gl.capabilities.getMaxAnisotropy());
-  const atlas = useMemo(() => createTunnelAtlas(tunnelImages, layout.mobile ? 224 : 448), [layout.mobile]);
+  const maxTextureSize = useThree((state) => state.gl.capabilities.maxTextureSize);
+  const devicePixels = useThree((state) => Math.max(state.size.width, state.size.height) * state.viewport.dpr);
+  /** Near panels span ~1000 device px on large or retina screens; a 448px tile from 640px sources turns blocky there. */
+  const hd = !layout.mobile && devicePixels >= tunnelConfig.hdFromPixels && maxTextureSize >= tunnelConfig.hdTile * ATLAS_GRID;
+  const tile = layout.mobile ? 224 : hd ? tunnelConfig.hdTile : 448;
+  const atlas = useMemo(() => createTunnelAtlas(hd ? tunnelImagesHD : tunnelImages, tile), [hd, tile]);
   useEffect(() => atlas.dispose, [atlas]);
   useEffect(() => {
     atlas.texture.anisotropy = Math.min(16, maxAnisotropy);

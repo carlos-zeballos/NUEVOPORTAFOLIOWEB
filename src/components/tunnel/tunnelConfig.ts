@@ -13,40 +13,45 @@ export const tunnelPalette = {
 };
 
 /** A static glob, so the build only emits these folders instead of every file under Assets. */
-const tunnelAssets = import.meta.glob(["../../public/Assets/escenas/*.webp", "../../public/Assets/perfil/*.webp", "../../public/Assets/screens/*.webp"], { eager: true, query: "?url", import: "default" }) as Record<string, string>;
+const tunnelAssets = import.meta.glob(["../../public/Assets/escenas/*.webp", "../../public/Assets/Zebware_imagenes_WebP/*.webp", "../../public/Assets/perfil/*.webp", "../../public/Assets/screens/*.webp"], { eager: true, query: "?url", import: "default" }) as Record<string, string>;
 
 const asset = (path: string) => tunnelAssets[`../../public/Assets/${path}`];
 
-const generated = (name: string) => asset(`escenas/${name}.webp`);
+/** Builds the tunnel list with either the 640px scenes or their 1024px versions (large screens only). */
+function buildTunnelImages(hd: boolean) {
+  const generated = (name: string) => asset(hd ? `Zebware_imagenes_WebP/${name}.webp` : `escenas/${name}.webp`);
+  return [
+    asset("perfil/mirasol.webp"),
+    generated("equipo-desarrollo"),
+    generated("navegador-vidrio"),
+    asset("perfil/boda-stephany-julio.webp"),
+    generated("emprendedora-web"),
+    generated("cubo-modular"),
+    asset("screens/kuronakama.webp"),
+    generated("app-en-mano"),
+    generated("data-center"),
+    asset("perfil/ayd-grupo.webp"),
+    generated("disenadora-tablet"),
+    generated("globo-conexiones"),
+    asset("perfil/kuro-sushi.webp"),
+    generated("pago-celular"),
+    generated("arcos-arequipa"),
+    asset("perfil/global-vertical.webp"),
+    generated("novia-invitacion"),
+    generated("consola-control"),
+    asset("perfil/alpaca-fiesta.webp"),
+    generated("dashboard-analitica"),
+    generated("brazo-robotico"),
+    asset("perfil/mfh.webp"),
+    generated("tecnologo-sistema"),
+    generated("teclado-codigo"),
+    generated("vidrio-tactil"),
+  ];
+}
 
 /** Up to 25 images (atlas size); they repeat across the tunnel. Real projects are interleaved with generated scenes. */
-export const tunnelImages = [
-  asset("perfil/mirasol.webp"),
-  generated("equipo-desarrollo"),
-  generated("navegador-vidrio"),
-  asset("perfil/boda-stephany-julio.webp"),
-  generated("emprendedora-web"),
-  generated("cubo-modular"),
-  asset("screens/kuronakama.webp"),
-  generated("app-en-mano"),
-  generated("data-center"),
-  asset("perfil/ayd-grupo.webp"),
-  generated("disenadora-tablet"),
-  generated("globo-conexiones"),
-  asset("perfil/kuro-sushi.webp"),
-  generated("pago-celular"),
-  generated("arcos-arequipa"),
-  asset("perfil/global-vertical.webp"),
-  generated("novia-invitacion"),
-  generated("consola-control"),
-  asset("perfil/alpaca-fiesta.webp"),
-  generated("dashboard-analitica"),
-  generated("brazo-robotico"),
-  asset("perfil/mfh.webp"),
-  generated("tecnologo-sistema"),
-  generated("teclado-codigo"),
-  generated("vidrio-tactil"),
-];
+export const tunnelImages = buildTunnelImages(false);
+export const tunnelImagesHD = buildTunnelImages(true);
 
 /** Length of the pinned intro, in viewport heights of scroll. */
 export const INTRO_SCROLL_VH = 160;
@@ -110,4 +115,7 @@ export const tunnelConfig = {
   density: 0.74,
   photoShare: 1,
   maxDpr: { desktop: 1.6, mobile: 1.25 },
+  /** Canvas size (longest side, device px) from which the atlas switches to HD tiles and 1024px scenes. */
+  hdFromPixels: 2400,
+  hdTile: 768,
 };
