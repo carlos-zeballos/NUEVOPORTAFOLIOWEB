@@ -28,7 +28,7 @@ export function ClosingSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} aria-label="Trabajemos juntos" className="relative z-10 bg-[#030504] text-white">
+    <section ref={sectionRef} id="trabajemos" aria-label="Trabajemos juntos" className="relative z-10 bg-[#030504] text-white">
       <div data-services-vision className="relative z-20 flex overflow-hidden px-6 pb-16 pt-12 sm:px-10 sm:pt-14 lg:px-4 lg:pb-20 lg:pt-16">
         <div className="relative w-full text-[clamp(1.8rem,7.6vw,8.25rem)] font-semibold uppercase leading-[0.9] tracking-[-0.065em]">
           <div className="overflow-hidden"><div data-dream-one className="w-fit max-w-full pr-[0.08em] will-change-transform">Traemos tu idea</div></div>

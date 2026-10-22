@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 
 export interface PageTransitionContextValue {
   transitionTo: (target: string) => void;
+  navigateTo: (path: string, options?: { target?: string; fromHistory?: boolean }) => void;
   isTransitioning: boolean;
 }
 

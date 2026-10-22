@@ -21,8 +21,8 @@ export function RobotFrameSequence() {
     if (!root || !video || !exitVeil) return;
 
     const motionOff = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const followRate = motionOff ? 60 : 5;
-    const maxSpeed = motionOff ? 100 : 0.55;
+    const followRate = motionOff ? 60 : 3.2;
+    const maxSpeed = motionOff ? 100 : 0.38;
     let targetProgress = 0;
     let targetTime = 0;
     let rafId = 0;
@@ -31,10 +31,14 @@ export function RobotFrameSequence() {
     const playhead = { progress: 0 };
 
     const updateVideo = () => {
+      rafId = 0;
+      if (video.seeking) {
+        rafId = requestAnimationFrame(updateVideo);
+        return;
+      }
       if (video.readyState >= 2 && Math.abs(video.currentTime - targetTime) > 0.008) {
         video.currentTime = targetTime;
       }
-      rafId = 0;
     };
 
     const render = () => {
@@ -76,7 +80,7 @@ export function RobotFrameSequence() {
       ScrollTrigger.create({
         trigger: root,
         start: "top top",
-        end: "+=145%",
+        end: "+=210%",
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,

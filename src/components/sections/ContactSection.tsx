@@ -1,33 +1,43 @@
 import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowUpRight, Mail, MessageCircle, Send } from "lucide-react";
+import { ArrowUpRight, Mail, Send } from "lucide-react";
+import { WhatsAppIcon } from "../ui/whatsapp-icon";
 import { contact } from "../../content/site";
+import { formatPrice, services } from "../../content/services";
+import { HONEYPOT_FIELD, sendLead } from "../../lib/lead";
+import { HoneypotField } from "../HoneypotField";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const webFrom = services.find((service) => service.slug === "paginas-web")?.priceFrom ?? Math.min(...services.map((service) => service.priceFrom));
 
 const fieldLabel = "mb-3 block text-[10px] font-semibold uppercase tracking-[.22em] text-white/35 transition-colors group-focus-within:text-primary";
 const fieldInput = "w-full border-0 bg-transparent p-0 text-base text-white outline-none placeholder:text-white/25 sm:text-lg";
 
 function ContactForm() {
   const [sent, setSent] = useState(false);
+  const startedAt = useRef(0);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const value = (key: string) => String(data.get(key) ?? "").trim();
+    const fields = { name: value("name"), contact: value("contact"), service: value("service"), message: value("message") };
     const message = [
       "Hola Zebware, quiero cotizar un proyecto.",
-      `Nombre: ${data.get("name")}`,
-      `Contacto: ${data.get("contact")}`,
-      `Servicio: ${data.get("service")}`,
-      `Proyecto: ${data.get("message")}`,
+      `Nombre: ${fields.name}`,
+      `Contacto: ${fields.contact}`,
+      `Servicio: ${fields.service}`,
+      `Proyecto: ${fields.message}`,
     ].join("\n");
     window.open(`https://wa.me/51946691999?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+    void sendLead(fields, startedAt.current, value(HONEYPOT_FIELD));
     setSent(true);
   };
 
   return (
-    <form data-contact-reveal onSubmit={submit} className="relative overflow-hidden border border-white/15 bg-[linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012))] p-6 shadow-[0_40px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:p-9">
+    <form data-contact-reveal onSubmit={submit} onFocus={() => { if (!startedAt.current) startedAt.current = performance.now(); }} className="relative overflow-hidden border border-white/15 bg-[linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.012))] p-6 shadow-[0_40px_100px_rgba(0,0,0,.45)] backdrop-blur-xl sm:p-9">
       <span className="absolute left-0 top-0 h-px w-24 bg-primary" aria-hidden="true" /><span className="absolute left-0 top-0 h-24 w-px bg-primary" aria-hidden="true" />
       <div className="mb-8 flex items-end justify-between gap-4">
         <div><span className="text-[10px] font-semibold uppercase tracking-[.24em] text-primary">Brief inicial</span><h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">Cuéntanos sobre tu proyecto</h3></div>
@@ -43,11 +53,12 @@ function ContactForm() {
         </select>
       </label>
       <label className="group block border-y border-white/15 py-5"><span className={fieldLabel}>04 / Tu proyecto</span><textarea className={`${fieldInput} min-h-20 resize-none leading-relaxed`} name="message" placeholder="Háblanos de tu idea, objetivos y tiempos..." required /></label>
+      <HoneypotField />
       <button type="submit" className="group mt-7 flex w-full items-center justify-between bg-primary px-6 py-5 text-left text-base font-black uppercase tracking-[-.02em] text-black transition-[transform,filter] duration-300 hover:-translate-y-1 hover:brightness-110">
         <span>{sent ? "¡Listo! Envíalo en WhatsApp" : "Enviar proyecto"}</span>
         <Send className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={2} aria-hidden="true" />
       </button>
-      <p className="mt-4 text-center text-[10px] uppercase tracking-[.15em] text-white/30">Se abrirá WhatsApp con tu mensaje listo · Información confidencial</p>
+      <p className="mt-4 text-center text-[10px] uppercase tracking-[.15em] text-white/30">Lo recibimos por correo y se abrirá WhatsApp con tu mensaje listo · Información confidencial</p>
     </form>
   );
 }
@@ -85,7 +96,7 @@ export function ContactSection() {
             </div>
             <div data-contact-reveal className="flex flex-col gap-3 sm:flex-row">
               <a href={contact.whatsapp} target="_blank" rel="noreferrer" className="group flex flex-1 items-center justify-between gap-6 border border-primary/50 px-6 py-5 text-sm font-semibold uppercase tracking-[.02em] text-primary transition-[background-color,color,transform] duration-300 hover:-translate-y-1 hover:bg-primary hover:text-black">
-                <span className="flex items-center gap-3"><MessageCircle className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />WhatsApp</span>
+                <span className="flex items-center gap-3"><WhatsAppIcon className="h-5 w-5" aria-hidden="true" />WhatsApp</span>
                 <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
               </a>
               <a href={`mailto:${contact.email}`} className="group flex flex-1 items-center justify-between gap-6 border border-white/20 px-6 py-5 text-sm font-semibold uppercase tracking-[.02em] text-white transition-[border-color,color,transform] duration-300 hover:-translate-y-1 hover:border-primary/60 hover:text-primary">
@@ -96,7 +107,7 @@ export function ContactSection() {
             <div data-contact-reveal className="grid grid-cols-3 gap-5 border-t border-white/10 pt-7">
               <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Base</span><strong className="mt-1.5 block text-sm font-medium text-white/85">Arequipa · Todo el Perú</strong></div>
               <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Respuesta</span><strong className="mt-1.5 block text-sm font-medium text-white/85">&lt; 24 horas</strong></div>
-              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Proyectos</span><strong className="mt-1.5 block text-sm font-medium text-primary">Desde S/300</strong></div>
+              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Webs desde</span><strong className="mt-1.5 block whitespace-nowrap text-sm font-medium text-primary">{formatPrice(webFrom)}</strong></div>
             </div>
           </div>
           <ContactForm />

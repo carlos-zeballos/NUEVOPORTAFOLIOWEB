@@ -93,7 +93,7 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
       const raw = proxy.raw;
       titleRefs.current.forEach((title, i) => {
         const distance = raw - i;
-        const fade = clamp((Math.abs(distance) - 0.22) / 0.24, 1);
+        const fade = clamp((Math.abs(distance) - 0.1) / 0.5, 1);
         const opacity = 1 - fade;
         title.style.opacity = String(opacity);
         title.style.visibility = opacity > 0.001 ? "visible" : "hidden";
@@ -110,11 +110,8 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
       });
     };
 
-    let settledFrom: number | null = null;
     const follow = (raw: number) => {
-      if (settledFrom !== null && Math.abs(raw - settledFrom) < 0.04) return;
-      settledFrom = null;
-      gsap.to(proxy, { raw, duration: motionOff ? 0 : 0.45, ease: "power3.out", overwrite: true, onUpdate: apply });
+      gsap.to(proxy, { raw, duration: motionOff ? 0 : 0.6, ease: "power2.out", overwrite: true, onUpdate: apply });
       const next = clamp(Math.round(raw), last);
       if (next !== internalIndexRef.current) {
         previousRef.current = internalIndexRef.current;
@@ -130,11 +127,12 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
       return;
     }
 
-    let settleTimer = 0;
-    const settle = (self: ScrollTrigger) => {
-      settledFrom = self.progress * last;
-      const target = Math.round(settledFrom);
-      gsap.to(proxy, { raw: target, duration: motionOff ? 0 : 0.5, ease: "power2.out", overwrite: true, onUpdate: apply });
+    /** Each scene holds for the outer part of its scroll segment and crossfades in the middle. */
+    const scenesAt = (progress: number) => {
+      const position = progress * last;
+      const base = Math.min(Math.floor(position), last - 1);
+      const t = gsap.utils.clamp(0, 1, (position - base - 0.3) / 0.4);
+      return base + t * t * (3 - 2 * t);
     };
 
     const trigger = ScrollTrigger.create({
@@ -142,15 +140,10 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
       start: "top top",
       end: "bottom bottom",
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        follow(self.progress * last);
-        window.clearTimeout(settleTimer);
-        settleTimer = window.setTimeout(() => settle(self), 180);
-      },
-      onRefresh: (self) => { proxy.raw = self.progress * last; apply(); },
+      onUpdate: (self) => follow(scenesAt(self.progress)),
+      onRefresh: (self) => { proxy.raw = scenesAt(self.progress); apply(); },
     });
     return () => {
-      window.clearTimeout(settleTimer);
       trigger.kill();
       gsap.killTweensOf(proxy);
     };

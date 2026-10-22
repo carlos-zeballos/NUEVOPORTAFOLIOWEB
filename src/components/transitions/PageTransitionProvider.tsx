@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PageTransitionContext } from "../../hooks/usePageTransition";
+import { commitRoute, hasPendingRoute } from "../../lib/router";
 import { PageTransitionOverlay } from "./PageTransitionOverlay";
 import { scrollController, scrollToTarget } from "../scroll/scrollToTarget";
 
@@ -14,6 +16,8 @@ function jumpToTarget(target: string) {
   return true;
 }
 
+type NavigateOptions = { target?: string; fromHistory?: boolean; restoreY?: number };
+
 function announceCompletion(target: string) {
   window.dispatchEvent(new CustomEvent("page-transition:complete", { detail: { target } }));
 }
@@ -26,6 +30,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const transitioningRef = useRef(false);
+  const navigateRef = useRef<(path: string, options?: NavigateOptions) => void>(() => undefined);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const finish = useCallback((target: string, previousOverflow: string) => {
@@ -35,7 +40,6 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     if (overlay) {
       gsap.set(overlay, { autoAlpha: 0 });
       overlay.style.pointerEvents = "none";
-      console.log("OVERLAY HIDDEN");
     }
     if (whitePanels) gsap.set(whitePanels, { yPercent: 100 });
     if (blackPanels) gsap.set(blackPanels, { yPercent: -100 });
@@ -45,19 +49,10 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     setIsTransitioning(false);
     timelineRef.current = null;
     announceCompletion(target);
-    console.log("CONTENT REVEAL");
-    console.log("TRANSITION COMPLETE");
+    if (hasPendingRoute()) requestAnimationFrame(() => navigateRef.current(window.location.pathname, { fromHistory: true, restoreY: history.state?.y }));
   }, []);
 
-  const transitionTo = useCallback((target: string) => {
-    if (transitioningRef.current) return;
-
-    const targetElement = document.querySelector(target);
-    if (!targetElement) {
-      console.warn(`[PageTransition] No existe el destino: ${target}`);
-      return;
-    }
-
+  const runCurtain = useCallback((target: string, onCovered: () => void, settle = 0.08) => {
     const overlay = overlayRef.current;
     const whiteNodes = overlay?.querySelectorAll<HTMLElement>('[data-transition-panel="white"]');
     const blackNodes = overlay?.querySelectorAll<HTMLElement>('[data-transition-panel="black"]');
@@ -79,25 +74,6 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     gsap.set(whitePanels, { yPercent: 100, force3D: true });
     gsap.set(blackPanels, { yPercent: -100, force3D: true });
 
-    const overlayStyles = getComputedStyle(overlay);
-    const overlayBounds = overlay.getBoundingClientRect();
-    console.log("TRANSITION START", {
-      panels: { white: whitePanels.length, black: blackPanels.length },
-      overlay: {
-        opacity: overlayStyles.opacity,
-        visibility: overlayStyles.visibility,
-        display: overlayStyles.display,
-        zIndex: overlayStyles.zIndex,
-        pointerEvents: overlayStyles.pointerEvents,
-        width: overlayBounds.width,
-        height: overlayBounds.height,
-      },
-      initialY: {
-        white: gsap.getProperty(whitePanels[0], "yPercent"),
-        black: gsap.getProperty(blackPanels[0], "yPercent"),
-      },
-    });
-
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const panelDuration = reducedMotion ? 0.42 : 0.82;
     const panelOffset = reducedMotion ? 0.018 : 0.04;
@@ -106,7 +82,6 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
       onComplete: () => finish(target, previousOverflow),
     });
     timelineRef.current = timeline;
-    console.log("WHITE START");
 
     WHITE_ORDER.forEach((panelIndex, orderIndex) => {
       timeline.to(
@@ -117,16 +92,11 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     });
 
     timeline.addLabel("whiteComplete", timeline.duration());
-    timeline.call(() => console.log("WHITE COMPLETE"), [], "whiteComplete");
-    timeline.call(() => {
-      jumpToTarget(target);
-      console.log("JUMP");
-    }, [], "whiteComplete");
-    timeline.to({}, { duration: 0.08 }, "whiteComplete");
+    timeline.call(onCovered, [], "whiteComplete");
+    timeline.to({}, { duration: settle }, "whiteComplete");
 
     const blackStart = timeline.duration();
     timeline.addLabel("blackStart", blackStart);
-    timeline.call(() => console.log("BLACK START"), [], "blackStart");
     BLACK_ORDER.forEach((panelIndex, orderIndex) => {
       timeline.to(
         blackPanels[panelIndex],
@@ -134,9 +104,43 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
         blackStart + orderIndex * panelOffset,
       );
     });
-    timeline.addLabel("blackComplete", timeline.duration());
-    timeline.call(() => console.log("BLACK COMPLETE"), [], "blackComplete");
   }, [finish]);
+
+  const transitionTo = useCallback((target: string) => {
+    if (transitioningRef.current) return;
+    if (!document.querySelector(target)) {
+      console.warn(`[PageTransition] No existe el destino: ${target}`);
+      return;
+    }
+    runCurtain(target, () => {
+      jumpToTarget(target);
+    });
+  }, [runCurtain]);
+
+  const navigateTo = useCallback((path: string, options?: NavigateOptions) => {
+    if (transitioningRef.current) return;
+    const target = options?.target;
+    const restoreY = options?.restoreY;
+    if (!options?.fromHistory) history.replaceState({ ...history.state, y: Math.round(window.scrollY) }, "");
+    runCurtain(path, () => {
+      commitRoute(options?.fromHistory ? undefined : path);
+      window.scrollTo(0, 0);
+      scrollController.lenis?.scrollTo(0, { immediate: true, force: true });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        if (target) jumpToTarget(target);
+        else if (typeof restoreY === "number" && restoreY > 0) scrollToTarget(restoreY, { immediate: true });
+      }));
+    }, 0.32);
+  }, [runCurtain]);
+  navigateRef.current = navigateTo;
+
+  useEffect(() => {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    const onPopState = (event: PopStateEvent) => navigateTo(window.location.pathname, { fromHistory: true, restoreY: event.state?.y });
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [navigateTo]);
 
   useEffect(() => () => {
     timelineRef.current?.kill();
@@ -144,7 +148,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     scrollController.lenis?.start();
   }, []);
 
-  const value = useMemo(() => ({ transitionTo, isTransitioning }), [transitionTo, isTransitioning]);
+  const value = useMemo(() => ({ transitionTo, navigateTo, isTransitioning }), [transitionTo, navigateTo, isTransitioning]);
 
   return (
     <PageTransitionContext.Provider value={value}>

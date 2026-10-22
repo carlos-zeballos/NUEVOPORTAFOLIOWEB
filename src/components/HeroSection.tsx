@@ -1,199 +1,191 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { Suspense, lazy, useCallback, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
-import { Github, Instagram, Linkedin, Menu, MessageCircle } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Instagram, Linkedin, MapPin, Menu, X } from "lucide-react";
 import { gsap } from "gsap";
-import { CustomEase } from "gsap/CustomEase";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePageTransition } from "../hooks/usePageTransition";
-import { scrollToTarget } from "./scroll/scrollToTarget";
-import { EmeraldSentinelScene } from "./three/EmeraldSentinelScene";
-import { HeroBackground } from "./HeroBackground";
+import { HeroCylinderTitle } from "./hero/HeroCylinderTitle";
+import { heroSignals, setHeroReveal } from "./hero/heroSignals";
+import { InfiniteTunnel } from "./tunnel/InfiniteTunnel";
+import { INTRO_SCROLL_VH, introPhases, QUESTION_DELAY } from "./tunnel/tunnelConfig";
+import { SiteMenu } from "./SiteMenu";
+import { ContactIcons } from "./ContactIcons";
 import { CursorTag } from "./ui/cursor-tag";
+import { PROFILE_PATH } from "../lib/router";
 import "./HeroSection.css";
 
-gsap.registerPlugin(CustomEase);
-CustomEase.create("heroInertialDrift", "M0,0 C0.03,0.62 0.07,0.94 0.16,0.992 C0.38,0.994 0.72,0.997 1,1");
+const EmeraldSentinelScene = lazy(() => import("./three/EmeraldSentinelScene").then((module) => ({ default: module.EmeraldSentinelScene })));
+
+gsap.registerPlugin(ScrollTrigger);
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const logoUrl = new URL("../public/Assets/ChatGPT Image Aug 11, 2026, 05_13_49 AM.png", import.meta.url).href;
-
-function AnimatedLine({ children }: { children: string }) {
-  return <span className="nk-question-line" data-question-line>{children}</span>;
-}
-
 export function HeroSection() {
-  const { transitionTo, isTransitioning } = usePageTransition();
+  const { transitionTo, navigateTo, isTransitioning } = usePageTransition();
   const heroRef = useRef<HTMLElement>(null);
-  const cursorGlowRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
   const exploreRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLAnchorElement>(null);
+  const explore = () => transitionTo("#servicios");
 
-  const enterExperience = () => transitionTo("#servicios");
-
-  const onMenu = () => {
-    const heroBottom = heroRef.current?.getBoundingClientRect().bottom ?? 0;
-    if (heroBottom > window.innerHeight * 0.35) enterExperience();
-    else scrollToTarget("#servicios");
+  const openProfile = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    if (!isTransitioning) navigateTo(PROFILE_PATH);
   };
-
-  useEffect(() => {
-    const glow = cursorGlowRef.current;
-    if (!glow || window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches) return;
-    const moveX = gsap.quickTo(glow, "x", { duration: .75, ease: "power3.out" });
-    const moveY = gsap.quickTo(glow, "y", { duration: .75, ease: "power3.out" });
-    const show = () => gsap.to(glow, { opacity: 1, duration: .5 });
-    const hide = () => gsap.to(glow, { opacity: 0, duration: .7 });
-    const move = (event: PointerEvent) => { moveX(event.clientX); moveY(event.clientY); };
-    window.addEventListener("pointermove", move, { passive: true });
-    window.addEventListener("pointerenter", show);
-    document.documentElement.addEventListener("mouseleave", hide);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerenter", show);
-      document.documentElement.removeEventListener("mouseleave", hide);
-    };
-  }, []);
 
   useLayoutEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const scrambleFrames = new Set<number>();
-    const scrambleText = () => {
-      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/<>[]{}";
-      hero.querySelectorAll<HTMLElement>("[data-scramble]").forEach((element, elementIndex) => {
-        const finalText = element.dataset.scramble ?? "";
-        if (reducedMotion) {
-          element.textContent = finalText;
-          return;
-        }
-        const startedAt = performance.now() + elementIndex * 90;
-        const duration = 1050 + finalText.length * 17;
-        const render = (now: number) => {
-          const progress = Math.max(0, Math.min(1, (now - startedAt) / duration));
-          const locked = Math.floor(progress * finalText.length);
-          element.textContent = Array.from(finalText).map((character, index) => {
-            if (character === " " || index < locked) return character;
-            return alphabet[Math.floor(Math.random() * alphabet.length)];
-          }).join("");
-          if (progress < 1) {
-            const frame = requestAnimationFrame(render);
-            scrambleFrames.add(frame);
-          } else {
-            element.textContent = finalText;
-          }
-        };
-        const frame = requestAnimationFrame(render);
-        scrambleFrames.add(frame);
-      });
-    };
+    heroSignals.introAt = performance.now();
+
     const context = gsap.context(() => {
-      const question = gsap.timeline()
-        .set(".nk-walk-question", { autoAlpha: 1 })
-        .fromTo("[data-question-line]", {
-          x: (index) => reducedMotion ? 0 : (index === 0 ? -window.innerWidth * .82 : window.innerWidth * .82),
-        }, {
-          x: (index) => index === 0 ? 9 : -9,
-          duration: reducedMotion ? .01 : 3.4,
-          ease: reducedMotion ? "none" : "heroInertialDrift",
-        })
-        .to("[data-question-line]", {
-          y: (index) => index === 0 ? 3 : -3,
-          duration: reducedMotion ? .01 : 2.7,
-          ease: "sine.inOut",
-        }, reducedMotion ? 0 : .6)
-        .to(".nk-walk-question", {
-          autoAlpha: 0, scale: .975,
-          filter: reducedMotion ? "none" : "blur(7px)",
-          duration: reducedMotion ? .01 : .5,
-          ease: "power2.in",
-        }, "-=.15");
-      const reveal = gsap.timeline({ paused: true })
-        .set("[data-hero-reveal]", { autoAlpha: 1 })
-        .from("[data-hero-reveal]", {
-          y: reducedMotion ? 0 : 24,
-          duration: reducedMotion ? 0.01 : 0.85,
-          stagger: reducedMotion ? 0 : 0.08,
-          ease: "expo.out",
-        });
-      let started = false;
-      const startReveal = () => {
-        if (started) return;
-        started = true;
-        reveal.restart();
-        scrambleText();
-      };
-      window.addEventListener("sentinel:stage-walk-complete", startReveal, { once: true });
-      const fallback = window.setTimeout(startReveal, 5600);
-      if (reducedMotion) reveal.progress(1);
-      return () => {
-        question.kill();
-        window.clearTimeout(fallback);
-        scrambleFrames.forEach((frame) => cancelAnimationFrame(frame));
-        window.removeEventListener("sentinel:stage-walk-complete", startReveal);
-      };
+      if (reducedMotion) {
+        heroSignals.progress = 1;
+        setHeroReveal(1);
+        hero.classList.add("is-revealed");
+        return;
+      }
+      setHeroReveal(0);
+      gsap.set("[data-copy]", { autoAlpha: 0, y: 28 });
+      gsap.set([".zh-shade", ".zh-robot", ".zh-glow"], { autoAlpha: 0 });
+
+      const { questionOut, portalEnd } = introPhases;
+
+      gsap.set(".zh-intro", { autoAlpha: 1 });
+      gsap.timeline({ delay: QUESTION_DELAY })
+        .fromTo(".zh-veil", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "sine.out" }, 0)
+        .fromTo(
+          ".zi-title",
+          { autoAlpha: 0, scale: 0.92, filter: "blur(12px)" },
+          { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.9, ease: "power2.out" },
+          0,
+        )
+        .fromTo(".zi-line>span", { yPercent: 105 }, { yPercent: 0, duration: 0.9, stagger: 0.14, ease: "power3.out" }, 0.05);
+
+      const master = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: hero,
+          start: "top top",
+          end: `+=${INTRO_SCROLL_VH}%`,
+          pin: true,
+          scrub: 0.9,
+          anticipatePin: 1,
+        },
+        onUpdate: () => {
+          heroSignals.progress = master.progress();
+          setHeroReveal(master.progress());
+        },
+      });
+
+      master
+        .addLabel("journey", 0)
+        .fromTo(".zi-say-start", { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.04 }, "journey+=0.04")
+        .fromTo(".zi-say-more", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.04 }, "journey+=0.06")
+        .addLabel("rush", questionOut)
+        .to(".zh-intro", { scale: 1.07, autoAlpha: 0, filter: "blur(8px)", duration: 0.1, ease: "sine.inOut" }, "rush")
+        .to(".zi-cue", { autoAlpha: 0, duration: 0.05 }, portalEnd - 0.06)
+        .addLabel("reveal", portalEnd)
+        .to(".zh-tunnel", { autoAlpha: 0, duration: 0.06, ease: "sine.inOut" }, "reveal-=0.02")
+        .to(".zh-glow", { autoAlpha: 1, duration: 0.1, ease: "sine.out" }, "reveal-=0.04")
+        .to(".zh-robot", { autoAlpha: 1, duration: 0.06, ease: "sine.out" }, "reveal-=0.02")
+        .to(".zh-shade", { autoAlpha: 1, duration: 0.08, ease: "sine.inOut" }, "reveal+=0.03")
+        .to("[data-copy]", { autoAlpha: 1, y: 0, duration: 0.06, stagger: 0.012, ease: "power2.out" }, "reveal+=0.06")
+        .to({}, { duration: 0.01 }, 0.99);
     }, hero);
 
     return () => {
       context.revert();
+      heroSignals.progress = 0;
+      setHeroReveal(0);
     };
   }, []);
 
   return (
-    <section ref={heroRef} id="inicio" className="nk-hero">
-      <HeroBackground />
-      <div ref={cursorGlowRef} className="nk-cursor-glow" aria-hidden="true" />
-      <motion.div className="nk-video" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.1, ease }}>
-        <EmeraldSentinelScene />
-      </motion.div>
-      <div className="nk-video-shade" aria-hidden="true" />
+    <section ref={heroRef} id="inicio" className="nk-hero zh">
+      <h1 className="sr-only">Zebware: desarrollo web, sistemas y apps para negocios en Arequipa, Perú</h1>
+      <div className="zh-inner">
+        <InfiniteTunnel className="zh-tunnel" />
+        <div className="zh-glow" aria-hidden="true" />
+        <div className="zh-shade" aria-hidden="true" />
+        <motion.div className="nk-video" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, ease }}>
+          <div className="zh-robot">
+            <Suspense fallback={null}><EmeraldSentinelScene /></Suspense>
+          </div>
+        </motion.div>
 
-      <div className="nk-walk-question" aria-label="¿Buscas una web innovadora?">
-        <AnimatedLine>¿Buscas</AnimatedLine>
-        <AnimatedLine>una web innovadora?</AnimatedLine>
+        <div className="zh-intro">
+          <div className="zh-veil" aria-hidden="true" />
+          <p className="zi-title">
+            <span className="zi-line"><span>¿Buscas una web</span></span>
+            <span className="zi-line"><span className="is-accent">innovadora?</span></span>
+          </p>
+        </div>
+        <div className="zi-cue" aria-hidden="true">
+          <span className="zi-mouse"><i /></span>
+          <span className="zi-pill">
+            <span className="zi-say zi-say-start">
+              <b className="is-desk">Haz scroll para descubrir</b>
+              <b className="is-touch">Desliza hacia arriba</b>
+            </span>
+            <span className="zi-say zi-say-more">
+              <b className="is-desk">Sigue bajando</b>
+              <b className="is-touch">Sigue deslizando</b>
+            </span>
+          </span>
+        </div>
+
+        <div className="zh-copy">
+          <p className="zh-eyebrow" data-copy>Zebware · Software a medida</p>
+          <div className="zh-title" data-copy><HeroCylinderTitle /></div>
+          <p className="zh-lead" data-copy>Diseñamos y desarrollamos software a medida para negocios en todo el Perú.</p>
+          <div className="zh-actions" data-copy>
+            <button ref={exploreRef} className="zh-btn" type="button" onClick={explore} disabled={isTransitioning}>
+              <span>Explorar web</span>
+              <ArrowRight aria-hidden="true" />
+            </button>
+            <a ref={profileRef} className="zh-btn" href={PROFILE_PATH} onClick={openProfile}>
+              <span>Perfil profesional</span>
+              <ArrowUpRight aria-hidden="true" />
+            </a>
+          </div>
+          <CursorTag targetRef={exploreRef} className="bg-[#03ea00] text-[#050505]">Ir a<br />servicios</CursorTag>
+          <CursorTag targetRef={profileRef} className="bg-[#03ea00] text-[#050505]">Conoce a<br />Carlos</CursorTag>
+        </div>
       </div>
+      <button className="zh-explore" type="button" onClick={explore} disabled={isTransitioning} data-copy>
+        <span>Explorar</span>
+        <ArrowDown aria-hidden="true" />
+      </button>
 
+      {typeof document !== "undefined" && createPortal(<SiteMenu open={menuOpen} onClose={closeMenu} />, document.body)}
       {typeof document !== "undefined" && createPortal(
-        <motion.header className="nk-nav" initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }}>
-          <div className="nk-nav-left">
+        <motion.header className="nk-nav zn" initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }}>
+          <div className="zn-left">
             <a className="nk-brand" href="#inicio" aria-label="Zebware, inicio">
               <img src={logoUrl} alt="Zebware" />
             </a>
-            <button className="nk-menu" type="button" onClick={onMenu} disabled={isTransitioning}><span><Menu size={15} strokeWidth={1.8} /></span><span className="nk-menu-label">Menú</span></button>
-            <div className="nk-tags"><span>Desarrollo digital</span><span>Innovación creativa</span></div>
+            <span className="zn-location"><MapPin aria-hidden="true" />Arequipa, Perú</span>
+          </div>
+          <nav className="zn-tabs" aria-label="Secciones">
+            <a className="is-on" href="#inicio" aria-current="page">Desarrollo</a>
+            <a href={PROFILE_PATH} onClick={openProfile}>Perfil</a>
+          </nav>
+          <div className="zn-right">
+            <ContactIcons className="contents" linkClassName="zn-icon" iconClassName="" />
+            <a className="zn-icon" href="https://instagram.com/zebware.pe" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram aria-hidden="true" /></a>
+            <a className="zn-icon" href="https://www.linkedin.com/in/carlos-zeballos-28500a202/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin aria-hidden="true" /></a>
+            <button className="zn-menu" type="button" onClick={() => setMenuOpen((value) => !value)} disabled={isTransitioning} aria-expanded={menuOpen} aria-controls="site-menu" aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}>
+              {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            </button>
           </div>
         </motion.header>,
         document.body,
       )}
-
-      <div className="nk-hero-content">
-        <div className="nk-copy">
-          <h1 aria-label="Desarrollo web en Perú: nosotros la diseñamos" data-hero-reveal>
-            <span className="nk-title-kicker"><span data-scramble="DESARROLLO WEB EN PERÚ">DESARROLLO WEB EN PERÚ</span></span>{" "}
-            <span className="nk-title-eleva" data-scramble="NOSOTROS">NOSOTROS</span>{" "}
-            <span className="nk-title-brand"><em data-scramble="LA">LA</em> <span className="nk-title-last"><em data-scramble="DISEÑAMOS">DISEÑAMOS</em><span className="nk-title-dot">.</span></span></span>
-          </h1>
-          <p className="nk-subtitle" data-hero-reveal>Zebware, compañía de software de Arequipa para todo el Perú, donde nos enfocamos en la experiencia y los resultados.</p>
-          <div className="nk-ctas" data-hero-reveal>
-            <button ref={exploreRef} className="nk-cta" type="button" onClick={enterExperience} disabled={isTransitioning}>
-              <span>Explorar web</span><span className="nk-cta-arrow" aria-hidden="true">→</span>
-            </button>
-            <a ref={profileRef} className="nk-cta nk-cta--quiet" href="https://www.linkedin.com/in/carlos-zeballos-28500a202/" target="_blank" rel="noreferrer">
-              <span>Perfil profesional</span><span className="nk-cta-arrow" aria-hidden="true">↗</span>
-            </a>
-          </div>
-          <CursorTag targetRef={exploreRef} className="bg-[#03EA00] text-black">Ir a<br />servicios</CursorTag>
-          <CursorTag targetRef={profileRef} className="bg-[#03EA00] text-black">Conoce a<br />Carlos</CursorTag>
-          <nav className="nk-socials" aria-label="Redes sociales de Zebware" data-hero-reveal>
-            <a href="https://wa.me/51946691999" target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle aria-hidden="true" /></a>
-            <a href="https://instagram.com/zebware.pe" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram aria-hidden="true" /></a>
-            <a href="https://www.linkedin.com/in/carlos-zeballos-28500a202/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin aria-hidden="true" /></a>
-            <a href="https://github.com/carlos-zeballos" target="_blank" rel="noreferrer" aria-label="GitHub"><Github aria-hidden="true" /></a>
-          </nav>
-        </div>
-      </div>
-
-      <div className="nk-status"><i aria-hidden="true" />System online</div>
     </section>
   );
 }

@@ -4,7 +4,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowUp, MapPin } from "lucide-react";
 import { contact, socials } from "../content/site";
 import { BrandLogo } from "./ui/brand-logo";
+import { ContactIcons } from "./ContactIcons";
 import { scrollToTarget } from "./scroll/scrollToTarget";
+import { services } from "../content/services";
+import { servicePath } from "../lib/router";
+import { usePageTransition } from "../hooks/usePageTransition";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,7 +19,6 @@ const navigation = [
   { label: "Contacto", href: "#contacto" },
   { label: "Preguntas frecuentes", href: "#preguntas" },
 ];
-const services = ["Páginas web", "E-commerce", "Apps móviles", "IA y automatizaciones", "Invitaciones digitales", "Software a medida"];
 const ticker = ["Páginas web", "E-commerce", "Apps móviles", "Inteligencia artificial", "Automatizaciones", "Software a medida", "Invitaciones digitales"];
 
 const goTo = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -28,6 +31,7 @@ const linkClass = "group inline-flex items-center text-[15px] text-white/70 tran
 
 export function SiteFooter() {
   const footerRef = useRef<HTMLElement>(null);
+  const { navigateTo, isTransitioning } = usePageTransition();
 
   useLayoutEffect(() => {
     const footer = footerRef.current;
@@ -87,7 +91,7 @@ export function SiteFooter() {
             <p className={columnTitle}><span className="h-px w-5 bg-primary" />Servicios</p>
             <ul className="grid gap-3.5">
               {services.map((service) => (
-                <li key={service}><a className={linkClass} href="#servicios" onClick={(event) => goTo(event, "#servicios")}><span className="h-px w-0 bg-primary transition-[width,margin] duration-300 group-hover:mr-2 group-hover:w-3" />{service}</a></li>
+                <li key={service.slug}><a className={linkClass} href={servicePath(service.slug)} onClick={(event) => { event.preventDefault(); if (!isTransitioning) navigateTo(servicePath(service.slug)); }}><span className="h-px w-0 bg-primary transition-[width,margin] duration-300 group-hover:mr-2 group-hover:w-3" />{service.title}</a></li>
               ))}
             </ul>
           </div>
@@ -95,8 +99,7 @@ export function SiteFooter() {
           <div data-footer-reveal className="col-span-2 lg:col-span-1">
             <p className={columnTitle}><span className="h-px w-5 bg-primary" />Contacto</p>
             <ul className="grid gap-5 text-[15px]">
-              <li><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">WhatsApp</span><a className="mt-1.5 inline-block text-white/80 transition-colors hover:text-primary" href={contact.whatsapp} target="_blank" rel="noreferrer">{contact.phone}</a></li>
-              <li><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Correo</span><a className="mt-1.5 inline-block break-all text-white/80 transition-colors hover:text-primary" href={`mailto:${contact.email}`}>{contact.email}</a></li>
+              <li><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Escríbenos</span><ContactIcons className="mt-2.5 flex gap-2.5" linkClassName="grid h-11 w-11 place-items-center border border-white/15 text-white/75 transition-[border-color,color,transform] duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary" iconClassName="h-[18px] w-[18px]" /></li>
               <li><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Ubicación</span><span className="mt-1.5 flex items-center gap-2 text-white/80"><MapPin className="h-4 w-4 text-primary" strokeWidth={1.7} aria-hidden="true" />{contact.city} · Atendemos todo el Perú</span></li>
             </ul>
           </div>

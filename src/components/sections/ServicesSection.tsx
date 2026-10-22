@@ -3,19 +3,18 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Word, flashAccent, revealWords, scrambleText, wordsHidden } from "../motion/title-motion";
 import { ServiceRow } from "../ui/service-row";
+import { services } from "../../content/services";
+import { servicePath } from "../../lib/router";
+import { usePageTransition } from "../../hooks/usePageTransition";
+import { catalogSchema, jsonLd } from "../../lib/seo";
+
+const catalog = jsonLd(catalogSchema(services));
 
 gsap.registerPlugin(ScrollTrigger);
 
-const services = [
-  { number: "01", title: "Páginas web", description: "Sitios rápidos y memorables que convierten visitas en clientes." },
-  { number: "02", title: "E-commerce", description: "Tiendas online listas para vender, con pagos y gestión simple." },
-  { number: "03", title: "Apps móviles", description: "Aplicaciones iOS y Android con experiencias fluidas." },
-  { number: "04", title: "IA y automatizaciones", description: "Agentes, chatbots y flujos automáticos que hacen crecer tu empresa." },
-  { number: "05", title: "Invitaciones digitales", description: "Invitaciones interactivas que sorprenden a tus invitados." },
-];
-
 export function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const { navigateTo, isTransitioning } = usePageTransition();
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -70,20 +69,35 @@ export function ServicesSection() {
 
   return (
     <section ref={sectionRef} id="servicios" className="relative z-10 bg-[#030504] text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: catalog }} />
       <div className="relative flex min-h-[100svh] flex-col overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_88%_12%,rgba(3,234,0,0.13),transparent_70%),radial-gradient(ellipse_40%_35%_at_8%_95%,rgba(3,234,0,0.07),transparent_70%)]" aria-hidden="true" />
         <div className="pointer-events-none absolute inset-0 opacity-[.05] [background-image:linear-gradient(90deg,rgba(255,255,255,.5)_1px,transparent_1px)] [background-size:8.333vw_100%]" aria-hidden="true" />
         <div className="relative z-10 flex flex-col gap-5 px-6 pb-[clamp(1rem,3svh,2rem)] pt-[clamp(5.5rem,15svh,7.5rem)] sm:px-10 md:flex-row md:items-end md:justify-between md:gap-10 lg:px-4">
           <div>
             <p className="mb-[clamp(0.6rem,2svh,1rem)] flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary"><span data-services-line className="line-pulse h-px w-10 origin-left bg-primary" /><span data-services-eyebrow data-scramble="02 — Servicios">02 — Servicios</span></p>
-            <h2 className="text-[clamp(2.4rem,min(5.6vw,9.5svh),5.8rem)] font-black uppercase leading-[0.86] tracking-[-0.06em] text-white">
+            <h2 className="text-[clamp(2rem,max(min(5.6vw,9.5svh),min(10.6vw,2.4rem)),5.8rem)] font-black uppercase leading-[0.86] tracking-[-0.06em] text-white">
               <span className="block"><Word>Servicios</Word></span>{" "}
               <span className="block whitespace-nowrap"><Word>que</Word>{" "}<Word accent className="text-shine">ofrecemos.</Word></span>
             </h2>
           </div>
         </div>
         <div data-services-list className="relative z-0 flex flex-1 flex-col border-b border-white/15">
-          {services.map((service, index) => <ServiceRow key={service.number} {...service} variant={index + 1} />)}
+          {services.map((service, index) => (
+            <ServiceRow
+              key={service.slug}
+              number={String(index + 1).padStart(2, "0")}
+              title={service.title}
+              description={service.summary}
+              image={service.cover}
+              variant={index + 1}
+              href={servicePath(service.slug)}
+              onClick={(event) => {
+                event.preventDefault();
+                if (!isTransitioning) navigateTo(servicePath(service.slug));
+              }}
+            />
+          ))}
         </div>
       </div>
 

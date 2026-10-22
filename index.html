@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#030504" />
     <title>Desarrollo Web en Perú | Páginas Web, Apps e IA | Zebware</title>
-    <meta name="description" content="Desarrollo web en todo el Perú: páginas web, e-commerce, apps, software a medida e IA para empresas de Lima, Arequipa y todo el país. Cotiza desde S/300 con Zebware." />
+    <meta name="description" content="Desarrollo web en Perú: páginas web desde S/ 1,200, e-commerce, apps, software a medida e IA para empresas de Lima, Arequipa y todo el país. Cotiza gratis." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="author" content="Carlos Zeballos — Zebware" />
     <meta name="geo.region" content="PE" />
@@ -14,8 +14,10 @@
     <link rel="alternate" hreflang="es-PE" href="https://zebware.org/" />
     <link rel="alternate" hreflang="x-default" href="https://zebware.org/" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
-    <link rel="icon" type="image/png" href="/favicon-zebware.png" />
-    <link rel="apple-touch-icon" href="/favicon-zebware.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Zebware" />
@@ -39,7 +41,7 @@
     <style>.js [data-prerender]{display:none}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Archivo+Black&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
     <script type="application/ld+json">
       {
@@ -53,11 +55,13 @@
             "description": "Estudio de desarrollo de páginas web, e-commerce, aplicaciones móviles, software a medida, inteligencia artificial y automatizaciones para empresas de todo el Perú, con base en Arequipa.",
             "slogan": "Usamos el ingenio humano y la inteligencia artificial para darte el mejor resultado.",
             "url": "https://zebware.org/",
-            "logo": "https://zebware.org/favicon-zebware.png",
+            "logo": "https://zebware.org/icon-512.png",
             "image": "https://zebware.org/og-image.png",
             "telephone": "+51946691999",
             "email": "carlos.fernando.zeballos@gmail.com",
-            "priceRange": "S/300+ (sin IGV)",
+            "priceRange": "S/ 150 – S/ 35,000 (sin IGV)",
+            "currenciesAccepted": "PEN",
+            "paymentAccepted": "Yape, Plin, transferencia bancaria",
             "address": { "@type": "PostalAddress", "addressLocality": "Arequipa", "addressRegion": "Arequipa", "addressCountry": "PE" },
             "areaServed": [
               { "@type": "Country", "name": "Perú" },
@@ -73,7 +77,7 @@
               { "@type": "City", "name": "Huancayo" },
               { "@type": "Place", "name": "Internacional (remoto)" }
             ],
-            "founder": { "@type": "Person", "name": "Carlos Zeballos", "url": "https://www.linkedin.com/in/carlos-zeballos-28500a202/" },
+            "founder": { "@type": "Person", "@id": "https://zebware.org/perfil#person", "name": "Carlos Zeballos", "url": "https://zebware.org/perfil" },
             "sameAs": [
               "https://www.linkedin.com/in/carlos-zeballos-28500a202/",
               "https://instagram.com/zebware.pe",
@@ -82,17 +86,7 @@
             "availableLanguage": ["es", "en"],
             "contactPoint": { "@type": "ContactPoint", "telephone": "+51946691999", "contactType": "sales", "areaServed": "PE", "availableLanguage": ["es", "en"] },
             "knowsAbout": ["Diseño de páginas web", "Desarrollo web", "E-commerce", "Aplicaciones móviles", "Inteligencia artificial", "Chatbots", "Automatización de procesos", "Software a medida", "SEO técnico", "Desarrollo web en Perú", "Diseño web en Lima", "Diseño web en Arequipa", "React", "Node.js"],
-            "hasOfferCatalog": {
-              "@type": "OfferCatalog",
-              "name": "Servicios digitales Zebware",
-              "itemListElement": [
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Páginas web", "description": "Sitios rápidos y memorables que convierten visitas en clientes.", "areaServed": "PE" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "E-commerce", "description": "Tiendas online listas para vender, con pagos y gestión simple.", "areaServed": "PE" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Apps móviles", "description": "Aplicaciones iOS y Android con experiencias fluidas.", "areaServed": "PE" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "IA y automatizaciones", "description": "Agentes, chatbots y flujos automáticos que hacen crecer tu empresa.", "areaServed": "PE" } },
-                { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Invitaciones digitales", "description": "Invitaciones interactivas que sorprenden a tus invitados.", "areaServed": "PE" } }
-              ]
-            }
+            "hasOfferCatalog": { "@id": "https://zebware.org/#catalog" }
           },
           {
             "@type": "WebSite",
@@ -102,16 +96,6 @@
             "url": "https://zebware.org/",
             "inLanguage": "es-PE",
             "publisher": { "@id": "https://zebware.org/#business" }
-          },
-          {
-            "@type": "WebPage",
-            "@id": "https://zebware.org/#webpage",
-            "url": "https://zebware.org/",
-            "name": "Desarrollo Web en Perú | Páginas Web, Apps e IA | Zebware",
-            "isPartOf": { "@id": "https://zebware.org/#website" },
-            "about": { "@id": "https://zebware.org/#business" },
-            "inLanguage": "es-PE",
-            "primaryImageOfPage": "https://zebware.org/og-image.png"
           }
         ]
       }
