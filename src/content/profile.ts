@@ -16,6 +16,8 @@ export const profileImages = {
   heroVideoMp4: new URL("../public/Assets/perfil/hero-arequipa.mp4", import.meta.url).href,
   heroPoster: new URL("../public/Assets/perfil/hero-arequipa.webp", import.meta.url).href,
   studioVideo: new URL("../public/Assets/firefly-scroll-desktop.webm", import.meta.url).href,
+  /** H.264 copy listed first: iOS Safari plays WebM unreliably. */
+  studioVideoMp4: new URL("../public/Assets/firefly-scroll-desktop.mp4", import.meta.url).href,
 };
 
 export const profileNav = [

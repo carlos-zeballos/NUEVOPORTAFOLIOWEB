@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Instagram, Linkedin, MapPin, Menu, X } from "lucide-react";
@@ -26,6 +26,16 @@ export function HeroSection() {
   const heroRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  /** On phones the robot sits behind the copy and buttons, so it is not mounted (nor its model downloaded). */
+  const [showRobot, setShowRobot] = useState(false);
+
+  useEffect(() => {
+    const phone = window.matchMedia("(max-width: 767px)");
+    const sync = () => setShowRobot(!phone.matches);
+    sync();
+    phone.addEventListener("change", sync);
+    return () => phone.removeEventListener("change", sync);
+  }, []);
 
   const exploreRef = useRef<HTMLButtonElement>(null);
   const profileRef = useRef<HTMLAnchorElement>(null);
@@ -114,7 +124,7 @@ export function HeroSection() {
         <div className="zh-shade" aria-hidden="true" />
         <motion.div className="nk-video" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, ease }}>
           <div className="zh-robot">
-            <Suspense fallback={null}><EmeraldSentinelScene /></Suspense>
+            {showRobot && <Suspense fallback={null}><EmeraldSentinelScene /></Suspense>}
           </div>
         </motion.div>
 

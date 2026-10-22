@@ -39,7 +39,7 @@ export const tunnelImages = [
   asset("perfil/global-vertical.webp"),
   generated("novia-invitacion"),
   generated("consola-control"),
-  asset("screens/alpaca.webp"),
+  asset("perfil/alpaca-fiesta.webp"),
   generated("dashboard-analitica"),
   generated("brazo-robotico"),
   asset("perfil/mfh.webp"),
@@ -63,6 +63,9 @@ export const introPhases = {
   /** From here the hero is fully on screen and its title starts cycling. */
   heroReady: 0.92,
 };
+
+/** Reveal value after which the tunnel is fully faded out and stops rendering. */
+export const TUNNEL_HIDDEN_AT = introPhases.portalEnd + 0.05;
 
 export const tunnelConfig = {
   mode: SCROLL_DRIVEN_MODE as TunnelMode,

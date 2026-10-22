@@ -1,11 +1,31 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { heroSignals, onHeroRevealChange, onHeroRunningChange } from "../hero/heroSignals";
+import { TUNNEL_HIDDEN_AT } from "../tunnel/tunnelConfig";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function AmbientParallax() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const grainRef = useRef<HTMLDivElement>(null);
+
+  /** The animated grain sits above the hero; over the bright tunnel panels it reads as TV static. */
+  useEffect(() => {
+    const grain = grainRef.current;
+    if (!grain) return;
+    const sync = () => {
+      const overTunnel = heroSignals.running && heroSignals.reveal < TUNNEL_HIDDEN_AT;
+      grain.style.display = overTunnel ? "none" : "";
+    };
+    sync();
+    const offReveal = onHeroRevealChange(sync);
+    const offRunning = onHeroRunningChange(sync);
+    return () => {
+      offReveal();
+      offRunning();
+    };
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -54,7 +74,7 @@ export function AmbientParallax() {
       <div data-depth="near" className="ambient-orb ambient-orb-b" />
       <div data-depth="near" className="ambient-line ambient-line-a" />
       <div data-depth="far" className="ambient-line ambient-line-b" />
-      <div className="ambient-grain" />
+      <div ref={grainRef} className="ambient-grain" />
     </div>
   );
 }

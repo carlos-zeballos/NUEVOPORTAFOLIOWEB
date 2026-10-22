@@ -112,7 +112,7 @@ export function ProfileHero() {
               <span key={heroWords[active].word} className="pf-word">{heroWords[active].word}</span>
             </span>
           </p>
-          <p data-hero-fade className="mt-[clamp(0.9rem,2.4vh,1.5rem)] max-w-[27rem] text-[clamp(0.84rem,1vw,1rem)] leading-relaxed text-white/60 max-md:max-w-[20rem]">
+          <p data-hero-fade className="mt-[clamp(0.9rem,2.4vh,1.5rem)] max-w-[27rem] text-[clamp(0.84rem,1vw,1rem)] leading-relaxed text-white/60 max-md:hidden">
             Fundador de <strong className="font-semibold text-white/90">Zebware</strong> en Arequipa, Perú. Llevo ideas de negocio a aplicaciones web completas: frontend, API, base de datos y despliegue.
           </p>
           <div data-hero-fade className="mt-[clamp(1.25rem,3.5vh,2.25rem)] flex flex-wrap items-center gap-3">

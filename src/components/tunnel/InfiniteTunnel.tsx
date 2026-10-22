@@ -13,16 +13,13 @@ import {
 } from "three";
 import { heroSignals, onHeroRevealChange, onHeroRunningChange } from "../hero/heroSignals";
 import { ATLAS_GRID, ATLAS_TILES, createTunnelAtlas } from "./tunnelArt";
-import { AUTO_FLY_MODE, introPhases, QUESTION_DELAY, tunnelConfig, tunnelImages, tunnelPalette } from "./tunnelConfig";
+import { AUTO_FLY_MODE, introPhases, QUESTION_DELAY, TUNNEL_HIDDEN_AT, tunnelConfig, tunnelImages, tunnelPalette } from "./tunnelConfig";
 import { readTunnelScroll, useTunnelScroll } from "./useTunnelScroll";
 
 const FLOOR = 0;
 const CEILING = 1;
 const LEFT = 2;
 const RIGHT = 3;
-
-/** Reveal value after which the tunnel is fully faded out and stops rendering. */
-export const TUNNEL_HIDDEN_AT = introPhases.portalEnd + 0.05;
 
 /** Camera distance travelled at a given timeline progress: steady, then accelerating into the portal. */
 function travelAt(p: number) {

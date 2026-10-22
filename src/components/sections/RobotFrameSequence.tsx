@@ -6,6 +6,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 /** First seconds of firefly-scroll-desktop, keyframe every 6 frames so scroll seeking stays smooth. */
 const videoSource = new URL("../../public/Assets/robot-scroll.webm", import.meta.url).href;
+/** Same cut in H.264 for iOS Safari, which plays WebM unreliably. */
+const videoSourceMp4 = new URL("../../public/Assets/robot-scroll.mp4", import.meta.url).href;
 const sequenceLimit = 6;
 const message = "Usamos el ingenio humano y la inteligencia artificial para darte el mejor resultado.";
 const greenWords = new Set(["ingenio", "inteligencia", "resultado."]);
@@ -123,13 +125,15 @@ export function RobotFrameSequence() {
     <div ref={rootRef} className="relative h-[100svh] w-full overflow-hidden bg-black" aria-label="Secuencia animada de tecnología Zebware">
       <video
         ref={videoRef}
-        src={videoSource}
-        className="block h-full w-full object-cover object-center will-change-[filter,opacity,transform]"
+        className="block h-full w-full object-cover object-center will-change-[filter,opacity,transform] max-md:object-contain"
         muted
         playsInline
         preload="auto"
         aria-hidden="true"
-      />
+      >
+        <source src={videoSourceMp4} type="video/mp4" />
+        <source src={videoSource} type="video/webm" />
+      </video>
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-[18svh] bg-gradient-to-b from-[#030504] to-transparent" aria-hidden="true" />
       <div data-video-exit-veil className="pointer-events-none absolute inset-0 z-30 bg-black opacity-0 will-change-[opacity]" aria-hidden="true" />
       <p

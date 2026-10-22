@@ -66,7 +66,10 @@ export function ProfileZebware() {
         </div>
 
         <div data-studio-frame className="relative aspect-[16/10] overflow-hidden border border-white/10 bg-black">
-          <video ref={videoRef} src={profileImages.studioVideo} muted loop playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-90" aria-hidden="true" />
+          <video ref={videoRef} muted loop playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-90" aria-hidden="true">
+            <source src={profileImages.studioVideoMp4} type="video/mp4" />
+            <source src={profileImages.studioVideo} type="video/webm" />
+          </video>
           <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(0,0,0,0.7))]" aria-hidden="true" />
           <span className="absolute left-5 top-5 inline-flex items-center gap-2 bg-black/55 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-white/80 backdrop-blur-md">
             <i className="h-1.5 w-1.5 rounded-full bg-[#03ea00]" aria-hidden="true" /> zebware.org
