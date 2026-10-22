@@ -103,7 +103,8 @@
 
 @media(max-width:767px){
   .zh-shade{background:linear-gradient(180deg,rgba(3,5,4,.92) 0,rgba(3,5,4,.75) 34%,transparent 52%)}
-  .zh-copy{left:16px;right:16px;top:92px;width:auto;transform:none}
+  .zh-copy{left:16px;right:16px;top:calc(50% - 8px);width:auto;transform:translateY(-50%)}
+  .zh-glow{left:50%;top:56%;width:150vw}
   .zt{height:2.6em;transform:scaleY(1.18)}
   .zh-eyebrow{margin-bottom:14px;font-size:10px}
   .zh-lead{max-width:300px;margin-bottom:18px;font-size:13.5px}

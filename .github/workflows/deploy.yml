@@ -38,3 +38,7 @@ jobs:
           git add -A
           git commit -q -m "Deploy ${GITHUB_SHA::7}"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" hostinger
+
+      - name: Avisar a los buscadores (IndexNow)
+        continue-on-error: true
+        run: node scripts/indexnow.mjs
