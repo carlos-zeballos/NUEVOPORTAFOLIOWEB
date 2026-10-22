@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
-  BufferGeometry,
   Color,
-  Float32BufferAttribute,
   InstancedBufferAttribute,
   InstancedBufferGeometry,
   MathUtils,
@@ -139,32 +137,6 @@ const panelFragment = /* glsl */ `
   }
 `;
 
-const lineVertex = /* glsl */ `
-  attribute float aWrap;
-  uniform float uTravel, uDepth, uBack;
-  varying float vDepth;
-  ${wrapZ}
-  void main() {
-    vec3 p = position;
-    if (aWrap > 0.5) p.z = wrapZ(p.z);
-    vec4 mv = modelViewMatrix * vec4(p, 1.0);
-    vDepth = -mv.z;
-    gl_Position = projectionMatrix * mv;
-  }
-`;
-
-const lineFragment = /* glsl */ `
-  uniform vec3 uColor, uVoid;
-  uniform float uFar, uFade, uFogScale;
-  varying float vDepth;
-  void main() {
-    float far = uFar * uFogScale;
-    float fog = 1.0 - smoothstep(far * 0.3, far * 0.9 + 0.001, vDepth);
-    gl_FragColor = vec4(mix(uVoid, uColor, fog * uFade), 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
 function buildPanels(layout: Layout) {
   const { width, height, cols, rows, slices } = layout;
   const { cell } = tunnelConfig;
@@ -207,42 +179,6 @@ function buildPanels(layout: Layout) {
   return geometry;
 }
 
-function buildGrid(layout: Layout) {
-  const { width: w, height: h, cols, rows, slices, back, depth } = layout;
-  const { cell } = tunnelConfig;
-  const x0 = -w / 2;
-  const y0 = -h / 2;
-  const positions: number[] = [];
-  const wrap: number[] = [];
-  const line = (a: number[], b: number[], wraps: number) => {
-    positions.push(...a, ...b);
-    wrap.push(wraps, wraps);
-  };
-  for (let k = 0; k < slices; k += 1) {
-    const z = -k * cell;
-    line([x0, y0, z], [-x0, y0, z], 1);
-    line([x0, -y0, z], [-x0, -y0, z], 1);
-    line([x0, y0, z], [x0, -y0, z], 1);
-    line([-x0, y0, z], [-x0, -y0, z], 1);
-  }
-  const near = back;
-  const far = -depth + back;
-  for (let i = 0; i <= cols; i += 1) {
-    const x = x0 + (i * w) / cols;
-    line([x, y0, near], [x, y0, far], 0);
-    line([x, -y0, near], [x, -y0, far], 0);
-  }
-  for (let j = 1; j < rows; j += 1) {
-    const y = y0 + (j * h) / rows;
-    line([x0, y, near], [x0, y, far], 0);
-    line([-x0, y, near], [-x0, y, far], 0);
-  }
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("aWrap", new Float32BufferAttribute(wrap, 1));
-  return geometry;
-}
-
 function TunnelScene() {
   const layout = useTunnelLayout();
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
@@ -278,7 +214,6 @@ function TunnelScene() {
       uFirstPhoto: { value: atlas.firstPhoto },
       uGrid: { value: ATLAS_GRID },
       uAtlas: { value: atlas.texture },
-      uColor: { value: new Color(tunnelPalette.line) },
       uVoid: { value: new Color(tunnelPalette.void) },
       uFogScale: { value: 1 },
       uFocus: { value: 0 },
@@ -289,19 +224,12 @@ function TunnelScene() {
   );
 
   const panelGeometry = useMemo(() => buildPanels(layout), [layout]);
-  const gridGeometry = useMemo(() => buildGrid(layout), [layout]);
   const panelMaterial = useMemo(
     () => new ShaderMaterial({ uniforms, vertexShader: panelVertex, fragmentShader: panelFragment }),
     [uniforms],
   );
-  const lineMaterial = useMemo(
-    () => new ShaderMaterial({ uniforms, vertexShader: lineVertex, fragmentShader: lineFragment }),
-    [uniforms],
-  );
   useEffect(() => () => panelGeometry.dispose(), [panelGeometry]);
-  useEffect(() => () => gridGeometry.dispose(), [gridGeometry]);
   useEffect(() => () => panelMaterial.dispose(), [panelMaterial]);
-  useEffect(() => () => lineMaterial.dispose(), [lineMaterial]);
 
   useEffect(() => {
     uniforms.uDepth.value = layout.depth;
@@ -368,7 +296,6 @@ function TunnelScene() {
 
   return (
     <>
-      <lineSegments geometry={gridGeometry} material={lineMaterial} frustumCulled={false} />
       <mesh geometry={panelGeometry} material={panelMaterial} frustumCulled={false} />
     </>
   );

@@ -71,7 +71,7 @@ export function ServicesSection() {
     <section ref={sectionRef} id="servicios" className="relative z-10 bg-[#030504] text-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: catalog }} />
       <div className="relative flex min-h-[100svh] flex-col overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_88%_12%,rgba(3,234,0,0.13),transparent_70%),radial-gradient(ellipse_40%_35%_at_8%_95%,rgba(3,234,0,0.07),transparent_70%)]" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_88%_32%,rgba(3,234,0,0.13),transparent_70%),radial-gradient(ellipse_40%_35%_at_8%_95%,rgba(3,234,0,0.07),transparent_70%)]" aria-hidden="true" />
         <div className="pointer-events-none absolute inset-0 opacity-[.05] [background-image:linear-gradient(90deg,rgba(255,255,255,.5)_1px,transparent_1px)] [background-size:8.333vw_100%]" aria-hidden="true" />
         <div className="relative z-10 flex flex-col gap-5 px-6 pb-[clamp(1rem,3svh,2rem)] pt-[clamp(5.5rem,15svh,7.5rem)] sm:px-10 md:flex-row md:items-end md:justify-between md:gap-10 lg:px-4">
           <div>

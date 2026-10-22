@@ -5,7 +5,6 @@ export type TunnelMode = typeof AUTO_FLY_MODE | typeof SCROLL_DRIVEN_MODE;
 export const tunnelPalette = {
   void: "#030504",
   panel: "#0b0f0c",
-  line: "#2a2c2e",
   /** Neutral tone the panels are graded to, so the green copy stands out. */
   tone: "#e9edf0",
   art: ["#03ea00", "#00c26a", "#0d7d3f", "#063d22", "#7dff9a", "#c6ff3d", "#00d9a3", "#e8fff0"],

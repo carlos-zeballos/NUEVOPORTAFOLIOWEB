@@ -12,8 +12,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const webFrom = services.find((service) => service.slug === "paginas-web")?.priceFrom ?? Math.min(...services.map((service) => service.priceFrom));
 
-const fieldLabel = "mb-3 block text-[10px] font-semibold uppercase tracking-[.22em] text-white/35 transition-colors group-focus-within:text-primary";
-const fieldInput = "w-full border-0 bg-transparent p-0 text-base text-white outline-none placeholder:text-white/25 sm:text-lg";
+const fieldLabel = "mb-3 block text-[10px] font-semibold uppercase tracking-[.22em] text-white/55 transition-colors group-focus-within:text-primary";
+const fieldInput = "w-full border-0 bg-transparent p-0 text-base text-white outline-none placeholder:text-white/40 sm:text-lg";
 
 function ContactForm() {
   const [sent, setSent] = useState(false);
@@ -58,7 +58,7 @@ function ContactForm() {
         <span>{sent ? "¡Listo! Envíalo en WhatsApp" : "Enviar proyecto"}</span>
         <Send className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={2} aria-hidden="true" />
       </button>
-      <p className="mt-4 text-center text-[10px] uppercase tracking-[.15em] text-white/30">Lo recibimos por correo y se abrirá WhatsApp con tu mensaje listo · Información confidencial</p>
+      <p className="mt-4 text-center text-[10px] uppercase tracking-[.15em] text-white/55">Lo recibimos por correo y se abrirá WhatsApp con tu mensaje listo · Información confidencial</p>
     </form>
   );
 }
@@ -82,7 +82,7 @@ export function ContactSection() {
 
   return (
     <section ref={sectionRef} id="contacto" className="relative z-10 overflow-hidden bg-[#020302] text-white">
-      <div className="pointer-events-none absolute -left-40 top-0 h-[34rem] w-[34rem] rounded-full bg-primary/[.08] blur-[140px]" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-32 top-[38%] h-[34rem] w-[34rem] rounded-full bg-primary/[.08] blur-[140px]" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-0 opacity-[.06] [background-image:linear-gradient(rgba(255,255,255,.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.18)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(180deg,#000,transparent_75%)]" aria-hidden="true" />
       <div className="relative mx-auto max-w-[116rem] px-5 sm:px-10 lg:px-8">
         <span data-contact-line className="block h-px origin-left bg-gradient-to-r from-primary via-primary/40 to-white/10" aria-hidden="true" />
@@ -105,9 +105,9 @@ export function ContactSection() {
               </a>
             </div>
             <div data-contact-reveal className="grid grid-cols-3 gap-5 border-t border-white/10 pt-7">
-              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Base</span><strong className="mt-1.5 block text-sm font-medium text-white/85">Arequipa · Todo el Perú</strong></div>
-              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Respuesta</span><strong className="mt-1.5 block text-sm font-medium text-white/85">&lt; 24 horas</strong></div>
-              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/30">Webs desde</span><strong className="mt-1.5 block whitespace-nowrap text-sm font-medium text-primary">{formatPrice(webFrom)}</strong></div>
+              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/55">Base</span><strong className="mt-1.5 block text-sm font-medium text-white/85">Arequipa · Todo el Perú</strong></div>
+              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/55">Respuesta</span><strong className="mt-1.5 block text-sm font-medium text-white/85">&lt; 24 horas</strong></div>
+              <div><span className="block text-[10px] uppercase tracking-[.2em] text-white/55">Webs desde</span><strong className="mt-1.5 block whitespace-nowrap text-sm font-medium text-primary">{formatPrice(webFrom)}</strong></div>
             </div>
           </div>
           <ContactForm />

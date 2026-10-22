@@ -8,6 +8,9 @@ gsap.registerPlugin(ScrollTrigger);
 const videoSource = new URL("../../public/Assets/robot-scroll.webm", import.meta.url).href;
 /** Same cut in H.264 for iOS Safari, which plays WebM unreliably. */
 const videoSourceMp4 = new URL("../../public/Assets/robot-scroll.mp4", import.meta.url).href;
+/** 854×480 with every frame a keyframe: phones seek it without decoding neighbours. */
+const videoSourceMobile = new URL("../../public/Assets/robot-scroll-mobile.mp4", import.meta.url).href;
+const mobileQuery = "(max-width: 767px)";
 const sequenceLimit = 6;
 const message = "Usamos el ingenio humano y la inteligencia artificial para darte el mejor resultado.";
 const greenWords = new Set(["ingenio", "inteligencia", "resultado."]);
@@ -24,6 +27,7 @@ export function RobotFrameSequence() {
     if (!root || !video || !exitVeil) return;
 
     const motionOff = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia(mobileQuery).matches;
     const followRate = motionOff ? 60 : 3.2;
     const maxSpeed = motionOff ? 100 : 0.38;
     let targetProgress = 0;
@@ -50,14 +54,14 @@ export function RobotFrameSequence() {
         : (1 - playhead.progress) * 2;
       targetTime = roundTrip * Math.min(sequenceLimit, Number.isFinite(video.duration) ? video.duration : sequenceLimit);
       const reveal = Math.max(0.82, gsap.utils.clamp(0, 1, playhead.progress / 0.08));
-      const exit = gsap.utils.clamp(0, 1, (playhead.progress - 0.78) / 0.22);
+      const exit = gsap.utils.clamp(0, 1, (playhead.progress - 0.86) / 0.14);
       video.style.opacity = String(reveal * (1 - exit * 0.6));
-      video.style.filter = `blur(${exit * 8}px)`;
+      if (!mobile) video.style.filter = `blur(${exit * 8}px)`;
       video.style.transform = `scale(${1 + exit * 0.05})`;
-      const veil = gsap.utils.clamp(0, 1, (Math.max(playhead.progress, targetProgress) - 0.78) / 0.22);
+      const veil = gsap.utils.clamp(0, 1, (Math.max(playhead.progress, targetProgress) - 0.86) / 0.14);
       exitVeil.style.opacity = String(Math.pow(veil, 1.3));
-      messageTimeline?.progress(gsap.utils.clamp(0, 1, (playhead.progress - 0.06) / 0.2));
-      initiativeTimeline?.progress(gsap.utils.clamp(0, 1, (playhead.progress - 0.14) / 0.16));
+      messageTimeline?.progress(gsap.utils.clamp(0, 1, (playhead.progress - 0.01) / 0.18));
+      initiativeTimeline?.progress(gsap.utils.clamp(0, 1, (playhead.progress - 0.08) / 0.16));
       if (!rafId) rafId = requestAnimationFrame(updateVideo);
     };
 
@@ -125,12 +129,13 @@ export function RobotFrameSequence() {
     <div ref={rootRef} className="relative h-[100svh] w-full overflow-hidden bg-black" aria-label="Secuencia animada de tecnología Zebware">
       <video
         ref={videoRef}
-        className="block h-full w-full object-cover object-center will-change-[filter,opacity,transform] max-md:object-contain"
+        className="block h-full w-full object-cover object-center will-change-[filter,opacity,transform] max-md:object-contain max-md:will-change-[opacity,transform]"
         muted
         playsInline
         preload="auto"
         aria-hidden="true"
       >
+        <source src={videoSourceMobile} type="video/mp4" media={mobileQuery} />
         <source src={videoSourceMp4} type="video/mp4" />
         <source src={videoSource} type="video/webm" />
       </video>

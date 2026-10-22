@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { introPhases } from "../tunnel/tunnelConfig";
-import { heroSignals } from "./heroSignals";
+import { heroSignals, onHeroRevealChange } from "./heroSignals";
+
+/** The copy fades in at portalEnd + 0.06; the letters start once it is visible. */
+const ENTER_AT = introPhases.portalEnd + 0.07;
 
 const words = ["¡NOSOTROS LA CONSTRUIMOS!"];
 const FONT = '"Archivo Black", "Arial Black", sans-serif';
@@ -38,7 +41,17 @@ export function HeroCylinderTitle() {
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const [fontSize, setFontSize] = useState(0);
+  const [entered, setEntered] = useState(false);
   const word = words[index];
+
+  useEffect(() => {
+    const sync = () => {
+      if (heroSignals.reveal >= ENTER_AT) setEntered(true);
+      else if (heroSignals.reveal < introPhases.portalEnd) setEntered(false);
+    };
+    sync();
+    return onHeroRevealChange(sync);
+  }, []);
 
   useEffect(() => {
     const measure = () => {
@@ -91,12 +104,12 @@ export function HeroCylinderTitle() {
   const glyphs = useMemo(() => (fontSize ? layout(word, fontSize) : []), [word, fontSize]);
 
   return (
-    <div className={`zt${leaving ? " is-leaving" : ""}`} aria-hidden="true" style={fontSize ? { fontSize } : undefined}>
+    <div className={`zt${entered ? " is-entered" : ""}${leaving ? " is-leaving" : ""}`} aria-hidden="true" style={fontSize ? { fontSize } : undefined}>
       {glyphs.length ? (
         <div className="zt-stage" key={word}>
           {glyphs.map((glyph, i) => (
             <span key={i} className={`zt-char${glyph.accent ? " is-accent" : ""}`} style={{ transform: `translate3d(${(glyph.x - glyph.w / 2).toFixed(1)}px,${glyph.line}em,${glyph.z.toFixed(1)}px) rotateY(${glyph.ry.toFixed(2)}deg)` }}>
-              <i style={{ animationDelay: `${i * 26}ms` }}>{glyph.char === " " ? "\u00a0" : glyph.char}</i>
+              <i style={{ "--i": i } as CSSProperties}>{glyph.char === " " ? "\u00a0" : glyph.char}</i>
             </span>
           ))}
         </div>

@@ -33,9 +33,9 @@ function Landing({ unknown = false }: { unknown?: boolean }) {
       <main>
         <HeroSection />
         <ServicesSection />
-        <LayeredTextSection />
         <ClosingSection />
         <ContactSection />
+        <LayeredTextSection />
         <FaqSection />
       </main>
       <SiteFooter />

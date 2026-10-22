@@ -61,7 +61,7 @@ export function HeroSection() {
       }
       setHeroReveal(0);
       gsap.set("[data-copy]", { autoAlpha: 0, y: 28 });
-      gsap.set([".zh-shade", ".zh-robot", ".zh-glow"], { autoAlpha: 0 });
+      gsap.set([".zh-shade", ".zh-robot", ".zh-glow", ".zh-fade"], { autoAlpha: 0 });
 
       const { questionOut, portalEnd } = introPhases;
 
@@ -103,7 +103,7 @@ export function HeroSection() {
         .to(".zh-tunnel", { autoAlpha: 0, duration: 0.06, ease: "sine.inOut" }, "reveal-=0.02")
         .to(".zh-glow", { autoAlpha: 1, duration: 0.1, ease: "sine.out" }, "reveal-=0.04")
         .to(".zh-robot", { autoAlpha: 1, duration: 0.06, ease: "sine.out" }, "reveal-=0.02")
-        .to(".zh-shade", { autoAlpha: 1, duration: 0.08, ease: "sine.inOut" }, "reveal+=0.03")
+        .to([".zh-shade", ".zh-fade"], { autoAlpha: 1, duration: 0.08, ease: "sine.inOut" }, "reveal+=0.03")
         .to("[data-copy]", { autoAlpha: 1, y: 0, duration: 0.06, stagger: 0.012, ease: "power2.out" }, "reveal+=0.06")
         .to({}, { duration: 0.01 }, 0.99);
     }, hero);
@@ -127,6 +127,7 @@ export function HeroSection() {
             {showRobot && <Suspense fallback={null}><EmeraldSentinelScene /></Suspense>}
           </div>
         </motion.div>
+        <div className="zh-fade" aria-hidden="true" />
 
         <div className="zh-intro">
           <div className="zh-veil" aria-hidden="true" />

@@ -10,9 +10,9 @@ import { PROFILE_PATH } from "../lib/router";
 const sections = [
   { label: "Inicio", href: "#inicio" },
   { label: "Servicios", href: "#servicios" },
-  { label: "¿Por qué Zebware?", href: "#layered-section" },
   { label: "Trabajemos juntos", href: "#trabajemos" },
   { label: "Contacto", href: "#contacto" },
+  { label: "¿Por qué Zebware?", href: "#layered-section" },
   { label: "Preguntas frecuentes", href: "#preguntas" },
 ];
 
@@ -86,11 +86,11 @@ export function SiteMenu({ open, onClose }: { open: boolean; onClose: () => void
           </ol>
           <div data-menu-item className="flex flex-col gap-6 text-sm text-white/55 lg:border-l lg:border-white/[0.07] lg:pl-10">
             <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">Escríbenos</p>
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-white/55">Escríbenos</p>
               <ContactIcons tabIndex={open ? 0 : -1} linkClassName="grid h-9 w-9 place-items-center border border-white/15 text-white/60 transition-colors hover:border-primary hover:text-primary" />
             </div>
             <div>
-              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">Síguenos</p>
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.24em] text-white/55">Síguenos</p>
               <div className="flex gap-2">
                 {socials.map(({ href, label, Icon }) => (
                   <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} tabIndex={open ? 0 : -1} className="grid h-9 w-9 place-items-center border border-white/15 text-white/60 transition-colors hover:border-primary hover:text-primary"><Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden="true" /></a>

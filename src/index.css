@@ -65,65 +65,11 @@
 
 main { position: relative; z-index: 1; }
 
-.ambient-grid {
-  position: absolute;
-  inset: -18%;
-  opacity: .045;
-  background-image: linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px);
-  background-size: 96px 96px;
-  mask-image: radial-gradient(circle at 52% 42%, #000 0%, transparent 70%);
-  will-change: transform;
-}
-
-.ambient-orb {
-  position: absolute;
-  width: min(48rem, 70vw);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  filter: blur(110px);
-  opacity: .075;
-  will-change: transform;
-}
-
-.ambient-orb-a { left: -22rem; top: 20vh; background: #fff; }
-.ambient-orb-b { right: -24rem; top: 55vh; background: hsl(var(--primary)); opacity: .055; }
-
-.ambient-line {
-  position: absolute;
-  width: 55vw;
-  height: 1px;
-  opacity: .12;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent);
-  will-change: transform;
-}
-
-.ambient-line-a { right: -12vw; top: 34vh; transform: rotate(-24deg); }
-.ambient-line-b { left: -14vw; top: 72vh; transform: rotate(18deg); opacity: .07; }
-
 .ambient-grain {
   position: absolute;
-  inset: -50%;
+  inset: 0;
   opacity: .035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
-  animation: ambient-grain-shift .28s steps(2) infinite;
-}
-
-@keyframes ambient-grain-shift {
-  0% { transform: translate3d(-2%, 1%, 0); }
-  25% { transform: translate3d(2%, -3%, 0); }
-  50% { transform: translate3d(-3%, 3%, 0); }
-  75% { transform: translate3d(3%, 2%, 0); }
-  100% { transform: translate3d(1%, -2%, 0); }
-}
-
-@media (max-width: 767px) {
-  .ambient-grid { background-size: 64px 64px; opacity: .035; }
-  .ambient-line { width: 80vw; }
-  .ambient-grain { animation: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient-grain { animation: none; }
 }
 
 @keyframes footer-marquee {

@@ -134,7 +134,8 @@ export function WorkTogetherScroll() {
         </g>
       </svg>
       <div data-conversemos-stage className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6 will-change-transform">
-        <p data-conversemos className="py-[0.06em] font-sora text-[clamp(2rem,max(8.4vw,min(calc((100vw-2rem)*0.119),2.6rem)),8rem)] font-black uppercase leading-none tracking-[-0.05em] text-[#F5F5F5]">
+        <div className="absolute left-1/2 top-1/2 h-[min(60vh,32rem)] w-[min(110vw,72rem)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(3,234,0,0.12),rgba(3,234,0,0.03)_45%,transparent_70%)]" aria-hidden="true" />
+        <p data-conversemos className="relative py-[0.06em] font-sora text-[clamp(2rem,max(8.4vw,min(calc((100vw-2rem)*0.119),2.6rem)),8rem)] font-black uppercase leading-none tracking-[-0.05em] text-[#F5F5F5]">
           <span className="text-primary">¡</span>Conversemos<span className="text-primary">!</span>
         </p>
       </div>

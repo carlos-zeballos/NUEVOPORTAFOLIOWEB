@@ -34,6 +34,7 @@
 
 .nk-hero.zh{--nk-green:#03ea00;position:relative;z-index:3;height:100vh;height:100svh;min-height:560px;overflow:hidden;isolation:isolate;background:#030504;color:#f2f5f2;font-family:"Inter",sans-serif}
 .zh-inner{position:absolute;inset:0}
+.zh-fade{position:absolute;z-index:6;left:0;right:0;bottom:0;height:22%;background:linear-gradient(180deg,transparent,rgba(3,5,4,.75) 60%,#030504);pointer-events:none}
 .nk-hero.zh .nk-video{position:absolute;inset:0;z-index:5;width:100%;height:100%;left:0;top:0;opacity:1;pointer-events:none}
 .nk-video canvas{display:block;width:100%!important;height:100%!important;pointer-events:none}
 .nk-video>div{pointer-events:none!important}
@@ -77,12 +78,16 @@
 .zh-title{position:relative;pointer-events:none}
 .zt{position:relative;height:2.5em;line-height:1;font-family:"Archivo Black","Arial Black",sans-serif;font-size:88px;color:#f3f6f3;transform:scaleY(1.22);transform-origin:0 0}
 .zt-stage{position:absolute;left:0;top:0;width:100%;height:2em;perspective:900px;perspective-origin:30% 50%}
-.zt-char{position:absolute;left:0;top:0;display:block;white-space:pre;backface-visibility:hidden}
-.zt-char i{display:block;font-style:normal;animation:zt-in .75s cubic-bezier(.16,1,.3,1) both}
+.zt-char{position:absolute;left:0;top:0;display:block;white-space:pre;backface-visibility:hidden;transform-style:preserve-3d}
+.zt-char i{display:block;font-style:normal;opacity:0;transform-origin:50% 100%}
+.zt.is-entered .zt-char i{opacity:1;animation:zt-in 1s cubic-bezier(.16,1,.3,1) both,zt-glint 1.2s ease-out both;animation-delay:calc(var(--i) * 34ms),calc(var(--i) * 34ms + 560ms)}
+.zt.is-entered .zt-char.is-accent i{animation-name:zt-in,zt-glint-accent}
 .zt.is-leaving .zt-char i{animation:zt-out .36s cubic-bezier(.7,0,.84,0) both}
 .zt-char.is-accent{color:var(--nk-green)}
 .zt-fallback{display:block;white-space:nowrap;position:absolute;left:0}
-@keyframes zt-in{from{opacity:0;transform:translateY(38%) rotateX(-75deg)}}
+@keyframes zt-in{0%{opacity:0;transform:translateY(70%) rotateX(-95deg) scale(.92)}45%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes zt-glint{0%,100%{text-shadow:none}35%{text-shadow:0 0 .18em rgba(3,234,0,.55)}}
+@keyframes zt-glint-accent{0%,100%{color:var(--nk-green);text-shadow:none}30%{color:#b8ffb0;text-shadow:0 0 .2em rgba(3,234,0,.75),0 0 .55em rgba(3,234,0,.3)}}
 @keyframes zt-out{to{opacity:0;transform:translateY(-34%) rotateX(70deg)}}
 .zh-lead{max-width:400px;margin:0 0 26px;font-size:clamp(14px,1.1vw,16px);line-height:1.55;color:rgba(242,245,242,.72)}
 .zh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:500px}
@@ -116,4 +121,4 @@
   .zh-veil{background:radial-gradient(ellipse 85% 34% at 50% 50%,rgba(3,5,4,.7),rgba(3,5,4,.3) 60%,transparent 85%)}
   .zi-title{font-size:clamp(34px,11vw,60px)}
 }
-@media(prefers-reduced-motion:reduce){.zt-char i,.zh-explore svg,.zi-cue>*,.zi-cue .zi-pill,.zi-mouse i{animation:none}}
+@media(prefers-reduced-motion:reduce){.zt.is-entered .zt-char i,.zt-char i,.zh-explore svg,.zi-cue>*,.zi-cue .zi-pill,.zi-mouse i{animation:none}}
