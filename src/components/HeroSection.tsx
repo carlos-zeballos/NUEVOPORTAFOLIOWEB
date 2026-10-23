@@ -1,40 +1,69 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "motion/react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Instagram, Linkedin, MapPin, Menu, X } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePageTransition } from "../hooks/usePageTransition";
 import { HeroCylinderTitle } from "./hero/HeroCylinderTitle";
 import { heroSignals, setHeroReveal } from "./hero/heroSignals";
-import { InfiniteTunnel } from "./tunnel/InfiniteTunnel";
 import { INTRO_SCROLL_VH, introPhases, QUESTION_DELAY } from "./tunnel/tunnelConfig";
 import { SiteMenu } from "./SiteMenu";
 import { ContactIcons } from "./ContactIcons";
 import { CursorTag } from "./ui/cursor-tag";
 import { PROFILE_PATH } from "../lib/router";
+import { hasFastWebGL, whenIdle, whenInteracted } from "../lib/idle";
 import "./HeroSection.css";
 
 const EmeraldSentinelScene = lazy(() => import("./three/EmeraldSentinelScene").then((module) => ({ default: module.EmeraldSentinelScene })));
+const InfiniteTunnel = lazy(() => import("./tunnel/InfiniteTunnel").then((module) => ({ default: module.InfiniteTunnel })));
+
+/** Seconds the prerendered intro's CSS animation has already played; null when the page did not start from the prerender. */
+let prerenderIntroAt: number | null = null;
+if (typeof document !== "undefined") {
+  const title = document.querySelector(".pr-home .zi-title");
+  const start = title?.getAnimations()[0]?.startTime;
+  if (title) prerenderIntroAt = typeof start === "number" ? start : 0;
+}
+const takePrerenderElapsed = () => {
+  if (prerenderIntroAt === null) return null;
+  const now = Number(document.timeline.currentTime ?? performance.now());
+  const elapsed = Math.max(0, (now - prerenderIntroAt) / 1000);
+  prerenderIntroAt = null;
+  return elapsed;
+};
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ease = [0.16, 1, 0.3, 1] as const;
 const logoUrl = new URL("../public/Assets/ChatGPT Image Aug 11, 2026, 05_13_49 AM.png", import.meta.url).href;
 export function HeroSection() {
   const { transitionTo, navigateTo, isTransitioning } = usePageTransition();
   const heroRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
-  /** On phones the robot sits behind the copy and buttons, so it is not mounted (nor its model downloaded). */
+  /** On phones the robot sits behind the copy and buttons, so it is not mounted (nor its model downloaded).
+   *  Elsewhere it stays hidden until the visitor scrolls, so it loads on their first input. */
   const [showRobot, setShowRobot] = useState(false);
+  const [showTunnel, setShowTunnel] = useState(false);
 
   useEffect(() => {
+    if (!hasFastWebGL()) return;
     const phone = window.matchMedia("(max-width: 767px)");
-    const sync = () => setShowRobot(!phone.matches);
-    sync();
+    let interacted = false;
+    const sync = () => setShowRobot(interacted && !phone.matches);
+    const offInteraction = whenInteracted(() => {
+      interacted = true;
+      sync();
+    });
     phone.addEventListener("change", sync);
-    return () => phone.removeEventListener("change", sync);
+    return () => {
+      offInteraction();
+      phone.removeEventListener("change", sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !hasFastWebGL()) return;
+    return whenIdle(() => setShowTunnel(true));
   }, []);
 
   const exploreRef = useRef<HTMLButtonElement>(null);
@@ -66,15 +95,22 @@ export function HeroSection() {
       const { questionOut, portalEnd } = introPhases;
 
       gsap.set(".zh-intro", { autoAlpha: 1 });
-      gsap.timeline({ delay: QUESTION_DELAY })
+      /** Continuing the prerendered intro: its title keeps full size and stays unmasked so the first paint already counts as content. */
+      const prerendered = takePrerenderElapsed();
+      if (prerendered !== null) hero.classList.add("zh-from-prerender");
+      const intro = gsap.timeline({ delay: QUESTION_DELAY })
         .fromTo(".zh-veil", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "sine.out" }, 0)
         .fromTo(
           ".zi-title",
-          { autoAlpha: 0, scale: 0.92, filter: "blur(12px)" },
-          { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.9, ease: "power2.out" },
+          prerendered !== null ? { opacity: 0.01, filter: "blur(12px)" } : { autoAlpha: 0, scale: 0.92, filter: "blur(12px)" },
+          prerendered !== null ? { opacity: 1, filter: "blur(0px)", duration: 0.9, ease: "power2.out" } : { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.9, ease: "power2.out" },
           0,
         )
         .fromTo(".zi-line>span", { yPercent: 105 }, { yPercent: 0, duration: 0.9, stagger: 0.14, ease: "power3.out" }, 0.05);
+      if (prerendered !== null) {
+        if (prerendered >= QUESTION_DELAY) intro.delay(0).seek(Math.min(prerendered - QUESTION_DELAY, intro.duration()));
+        else intro.delay(QUESTION_DELAY - prerendered);
+      }
 
       const master = gsap.timeline({
         defaults: { ease: "none" },
@@ -119,14 +155,16 @@ export function HeroSection() {
     <section ref={heroRef} id="inicio" className="nk-hero zh">
       <h1 className="sr-only">Zebware: desarrollo web, sistemas y apps para negocios en Arequipa, Perú</h1>
       <div className="zh-inner">
-        <InfiniteTunnel className="zh-tunnel" />
+        <div className="zh-tunnel" aria-hidden="true">
+          {showTunnel && <Suspense fallback={null}><InfiniteTunnel /></Suspense>}
+        </div>
         <div className="zh-glow" aria-hidden="true" />
         <div className="zh-shade" aria-hidden="true" />
-        <motion.div className="nk-video" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, ease }}>
+        <div className="nk-video">
           <div className="zh-robot">
             {showRobot && <Suspense fallback={null}><EmeraldSentinelScene /></Suspense>}
           </div>
-        </motion.div>
+        </div>
         <div className="zh-fade" aria-hidden="true" />
 
         <div className="zh-intro">
@@ -175,7 +213,7 @@ export function HeroSection() {
 
       {typeof document !== "undefined" && createPortal(<SiteMenu open={menuOpen} onClose={closeMenu} />, document.body)}
       {typeof document !== "undefined" && createPortal(
-        <motion.header className="nk-nav zn" initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease }}>
+        <header className="nk-nav zn">
           <div className="zn-left">
             <a className="nk-brand" href="#inicio" aria-label="Zebware, inicio">
               <img src={logoUrl} alt="Zebware" />
@@ -194,7 +232,7 @@ export function HeroSection() {
               {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
             </button>
           </div>
-        </motion.header>,
+        </header>,
         document.body,
       )}
     </section>

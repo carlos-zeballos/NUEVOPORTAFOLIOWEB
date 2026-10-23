@@ -64,7 +64,7 @@ export function ServiceRow({ number, title, description, price, image, variant, 
   }, [variant, mounted]);
 
   return (
-    <a ref={rowRef} data-service-row href={href} onClick={onClick} className={`group relative grid min-h-[4rem] flex-1 grid-cols-[2.6rem_1fr_auto] items-center gap-3 overflow-hidden px-5 min-[380px]:grid-cols-[3.25rem_1fr_auto] min-[380px]:gap-4 min-[380px]:px-6 py-[clamp(0.4rem,1.2svh,0.9rem)] transition-colors duration-300 sm:grid-cols-[6rem_1fr_auto] sm:px-10 lg:grid-cols-[16.5rem_1fr_auto] lg:gap-8 lg:px-4 ${variant === 2 ? "" : "hover:bg-primary"}`}>
+    <a ref={rowRef} data-service-row href={href} onClick={onClick} aria-label={`${title}. ${description}${price ? ` Desde ${price}` : ""}`} className={`group relative grid min-h-[4rem] flex-1 grid-cols-[2.6rem_1fr_auto] items-center gap-3 overflow-hidden px-5 min-[380px]:grid-cols-[3.25rem_1fr_auto] min-[380px]:gap-4 min-[380px]:px-6 py-[clamp(0.4rem,1.2svh,0.9rem)] transition-colors duration-300 sm:grid-cols-[6rem_1fr_auto] sm:px-10 lg:grid-cols-[16.5rem_1fr_auto] lg:gap-8 lg:px-4 ${variant === 2 ? "" : "hover:bg-primary"}`}>
       <span data-divider className="absolute inset-x-0 top-0 z-20 h-px origin-left bg-white/15" />
       <span ref={wipeRef} className="absolute inset-0 z-0 origin-left scale-x-0 bg-primary" />
       <span data-row-content className="relative z-10 font-mono text-sm font-semibold text-primary group-hover:text-black lg:text-base">({number})</span>

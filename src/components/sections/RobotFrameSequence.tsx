@@ -75,6 +75,14 @@ export function RobotFrameSequence() {
     video.addEventListener("loadedmetadata", prepareVideo);
     if (video.readyState >= 1) prepareVideo();
 
+    const nearby = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      nearby.disconnect();
+      video.preload = "auto";
+      video.load();
+    }, { rootMargin: "200% 0px" });
+    nearby.observe(root);
+
     const context = gsap.context(() => {
       messageTimeline = gsap.timeline({ paused: true }).fromTo(
         "[data-message-letter]",
@@ -119,6 +127,7 @@ export function RobotFrameSequence() {
 
     return () => {
       gsap.ticker.remove(follow);
+      nearby.disconnect();
       video.removeEventListener("loadedmetadata", prepareVideo);
       if (rafId) cancelAnimationFrame(rafId);
       context.revert();
@@ -126,13 +135,13 @@ export function RobotFrameSequence() {
   }, []);
 
   return (
-    <div ref={rootRef} className="relative h-[100svh] w-full overflow-hidden bg-black" aria-label="Secuencia animada de tecnología Zebware">
+    <div ref={rootRef} className="relative h-[100svh] w-full overflow-hidden bg-black" role="region" aria-label="Secuencia animada de tecnología Zebware">
       <video
         ref={videoRef}
         className="block h-full w-full object-cover object-center will-change-[filter,opacity,transform] max-md:object-contain max-md:will-change-[opacity,transform]"
         muted
         playsInline
-        preload="auto"
+        preload="none"
         aria-hidden="true"
       >
         <source src={videoSourceMobile} type="video/mp4" media={mobileQuery} />
@@ -144,8 +153,8 @@ export function RobotFrameSequence() {
       <p
         ref={messageRef}
         className="pointer-events-none absolute right-6 top-[clamp(6rem,16vh,10rem)] z-10 w-[min(84vw,16.5em)] text-justify [text-align-last:right] text-[clamp(1.3rem,2.15vw,2.65rem)] font-medium leading-[1.08] tracking-[-0.04em] text-white sm:right-10 lg:right-14"
-        aria-label={message}
       >
+        <span className="sr-only">{message}</span>
         {message.split(" ").flatMap((word, wordIndex) => [
           wordIndex > 0 ? " " : null,
           <span key={`${word}-${wordIndex}`} aria-hidden="true" className={`inline-block whitespace-nowrap ${greenWords.has(word) ? "text-primary" : "text-white"}`}>

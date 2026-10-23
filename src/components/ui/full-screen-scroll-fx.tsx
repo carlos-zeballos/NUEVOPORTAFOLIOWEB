@@ -66,6 +66,18 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
   const revealedRef = useRef(false);
   const waitingForBarsRef = useRef(false);
   const motionOff = reduceMotion ?? false;
+  /** The stage is sticky, so native lazy loading would still fetch every background on page load. */
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || near) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) setNear(true);
+    }, { rootMargin: "150% 0px" });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [near]);
 
   const goTo = (next: number) => {
     const safe = clamp(next, sections.length - 1);
@@ -209,10 +221,10 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
   } as CSSProperties;
 
   return (
-    <div ref={(node) => { rootRef.current = node; if (typeof forwardedRef === "function") forwardedRef(node); else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLDivElement | null>).current = node; }} className={`fx ${className ?? ""}`} style={{ ...vars, height: `calc(100svh + ${Math.max(1, sections.length - 1)} * 85svh)` }} aria-label={ariaLabel}>
+    <div ref={(node) => { rootRef.current = node; if (typeof forwardedRef === "function") forwardedRef(node); else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLDivElement | null>).current = node; }} className={`fx ${className ?? ""}`} style={{ ...vars, height: `calc(100svh + ${Math.max(1, sections.length - 1)} * 85svh)` }} role="region" aria-label={ariaLabel}>
       <div ref={stageRef} className="fx-stage">
         <div className="fx-backgrounds" aria-hidden="true">
-          {sections.map((section, sectionIndex) => <div ref={(node) => { if (node) bgRefs.current[sectionIndex] = node; }} className={`fx-bg ${sectionIndex === index ? "active" : ""}`} key={section.id ?? sectionIndex}>{section.renderBackground?.(sectionIndex === index, sectionIndex === previousRef.current)}{section.background && <img src={section.background} alt="" decoding="async" />}<div className="fx-bg-overlay" /></div>)}
+          {sections.map((section, sectionIndex) => <div ref={(node) => { if (node) bgRefs.current[sectionIndex] = node; }} className={`fx-bg ${sectionIndex === index ? "active" : ""}`} key={section.id ?? sectionIndex}>{section.renderBackground?.(sectionIndex === index, sectionIndex === previousRef.current)}{section.background && near && <img src={section.background} alt="" decoding="async" />}<div className="fx-bg-overlay" /></div>)}
         </div>
         <div className="fx-gridlines" aria-hidden="true" />
         {header && <h2 className="fx-header">{header}</h2>}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { HeroSection } from "./components/HeroSection";
 import { LayeredTextSection } from "./components/sections/LayeredTextSection";
 import { PageTransitionProvider } from "./components/transitions/PageTransitionProvider";
@@ -9,11 +9,15 @@ import { FaqSection } from "./components/sections/FaqSection";
 import { ContactSection } from "./components/sections/ContactSection";
 import { SiteFooter } from "./components/SiteFooter";
 import { AmbientParallax } from "./components/motion/AmbientParallax";
-import { ProfilePage } from "./pages/profile/ProfilePage";
-import { ServicePage } from "./pages/service/ServicePage";
 import { findService } from "./content/services";
 import { HOME_PATH, PROFILE_PATH, serviceSlugOf, usePath } from "./lib/router";
 import { homePageSchema, jsonLd } from "./lib/seo";
+import { whenIdle } from "./lib/idle";
+
+const loadProfilePage = () => import("./pages/profile/ProfilePage");
+const loadServicePage = () => import("./pages/service/ServicePage");
+const ProfilePage = lazy(() => loadProfilePage().then((module) => ({ default: module.ProfilePage })));
+const ServicePage = lazy(() => loadServicePage().then((module) => ({ default: module.ServicePage })));
 
 const homeSchema = jsonLd(homePageSchema);
 
@@ -53,10 +57,18 @@ function Page({ path }: { path: string }) {
 
 export default function App() {
   const path = usePath();
+
+  useEffect(() => whenIdle(() => {
+    void loadProfilePage();
+    void loadServicePage();
+  }, 6000), []);
+
   return (
     <PageTransitionProvider>
       <SmoothScroll />
-      <Page path={path} />
+      <Suspense fallback={<div className="min-h-screen bg-hero-bg" />}>
+        <Page path={path} />
+      </Suspense>
     </PageTransitionProvider>
   );
 }

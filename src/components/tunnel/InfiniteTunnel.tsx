@@ -323,30 +323,20 @@ function FrameGate() {
   return null;
 }
 
-export function InfiniteTunnel({ className }: { className?: string }) {
-  const [enabled, setEnabled] = useState(false);
-  const [mobile, setMobile] = useState(false);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setMobile(window.matchMedia("(max-width: 767px), (pointer: coarse)").matches);
-    setEnabled(true);
-  }, []);
-
-  if (!enabled) return <div className={className} aria-hidden="true" />;
+/** Renders only the canvas: the hero owns the `.zh-tunnel` wrapper its scroll timeline animates. */
+export function InfiniteTunnel() {
+  const [mobile] = useState(() => window.matchMedia("(max-width: 767px), (pointer: coarse)").matches);
 
   return (
-    <div className={className} aria-hidden="true">
-      <Canvas
-        flat
-        dpr={[1, mobile ? tunnelConfig.maxDpr.mobile : tunnelConfig.maxDpr.desktop]}
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-        camera={{ fov: tunnelConfig.fov.desktop, near: 0.05, far: 60, position: [0, 0, 0] }}
-        onCreated={({ gl }) => gl.setClearColor(tunnelPalette.void)}
-      >
-        <FrameGate />
-        <TunnelScene />
-      </Canvas>
-    </div>
+    <Canvas
+      flat
+      dpr={[1, mobile ? tunnelConfig.maxDpr.mobile : tunnelConfig.maxDpr.desktop]}
+      gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+      camera={{ fov: tunnelConfig.fov.desktop, near: 0.05, far: 60, position: [0, 0, 0] }}
+      onCreated={({ gl }) => gl.setClearColor(tunnelPalette.void)}
+    >
+      <FrameGate />
+      <TunnelScene />
+    </Canvas>
   );
 }

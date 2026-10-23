@@ -68,7 +68,7 @@ export function SiteFooter() {
       <div className="relative mx-auto max-w-[116rem] px-5 sm:px-10 lg:px-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 py-16 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-10">
           <div data-footer-reveal className="col-span-2 lg:col-span-1">
-            <BrandLogo className="h-9" />
+            <BrandLogo className="h-9" loading="lazy" />
             <p className="mt-6 max-w-sm text-[15px] font-light leading-relaxed text-white/55">Estudio de desarrollo de software con base en Arequipa y clientes en todo el Perú. Creamos páginas web, apps e inteligencia artificial para empresas que quieren crecer.</p>
             <p className="mt-6 inline-flex items-center gap-2.5 border border-primary/25 bg-primary/[.06] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[.18em] text-primary"><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />Disponible para nuevos proyectos</p>
             <nav className="mt-7 flex gap-2" aria-label="Redes sociales de Zebware">
@@ -107,7 +107,7 @@ export function SiteFooter() {
 
         <span data-footer-line className="block h-px origin-left bg-white/10" aria-hidden="true" />
         <div className="flex flex-col gap-5 py-7 text-[11px] font-medium uppercase tracking-[.14em] text-white/55 sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-2.5">© {new Date().getFullYear()} <BrandLogo className="h-4 opacity-70" /> · Arequipa, Perú</span>
+          <span className="flex items-center gap-2.5">© {new Date().getFullYear()} <BrandLogo className="h-4 opacity-70" loading="lazy" /> · Arequipa, Perú</span>
           <span className="hidden md:block">Ingenio humano <span className="text-primary">+</span> inteligencia artificial</span>
           <a href="#inicio" onClick={(event) => goTo(event, "#inicio")} className="group inline-flex items-center gap-3 self-start text-white/55 transition-colors hover:text-primary sm:self-auto">
             Volver arriba

@@ -2,8 +2,29 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createElement } from "react";
-import { renderToString } from "react-dom/server";
+import { Writable } from "node:stream";
+import { renderToPipeableStream } from "react-dom/server";
 import { createServer } from "vite";
+
+/** Waits for lazy routes to resolve, which renderToString cannot do. */
+const renderComplete = (element) => new Promise((resolvePromise, reject) => {
+  let html = "";
+  const sink = new Writable({
+    write(chunk, _encoding, callback) {
+      html += chunk.toString();
+      callback();
+    },
+    final(callback) {
+      resolvePromise(html.replace(/<!--\/?\$\??-->/g, ""));
+      callback();
+    },
+  });
+  const stream = renderToPipeableStream(element, {
+    onAllReady: () => stream.pipe(sink),
+    onShellError: reject,
+    onError: reject,
+  });
+});
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const dist = resolve(root, "dist");
@@ -75,8 +96,9 @@ try {
 
   for (const { path, file, meta } of routes) {
     setServerPath(path);
-    const markup = renderToString(createElement(App)).replace(/file:\/\/[^"'\s)]+/g, toBuiltAsset);
-    let html = template.replace("<!--prerender-->", `<div data-prerender>${markup}</div>`)
+    const markup = (await renderComplete(createElement(App))).replace(/file:\/\/[^"'\s)]+/g, toBuiltAsset);
+    const wrapper = path === HOME_PATH ? '<div data-prerender class="pr-home">' : "<div data-prerender>";
+    let html = template.replace("<!--prerender-->", `${wrapper}${markup}</div>`)
       .replace(/"(image|primaryImageOfPage)":"\/assets\//g, `"$1":"${SITE_URL}/assets/`);
     if (meta) html = withMeta(html, { ...meta, url: absoluteUrl(meta.path) });
     const outPath = resolve(dist, file);
