@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { whenInteracted } from "../../lib/idle";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,6 +11,8 @@ const videoSource = new URL("../../public/Assets/robot-scroll.webm", import.meta
 const videoSourceMp4 = new URL("../../public/Assets/robot-scroll.mp4", import.meta.url).href;
 /** 854×480 with every frame a keyframe: phones seek it without decoding neighbours. */
 const videoSourceMobile = new URL("../../public/Assets/robot-scroll-mobile.mp4", import.meta.url).href;
+/** First frame (8 KB) shown while the video downloads, so slow phones never see an empty black stage. */
+const videoPoster = new URL("../../public/Assets/robot-scroll-poster.webp", import.meta.url).href;
 const mobileQuery = "(max-width: 767px)";
 const sequenceLimit = 6;
 const message = "Usamos el ingenio humano y la inteligencia artificial para darte el mejor resultado.";
@@ -78,10 +81,11 @@ export function RobotFrameSequence() {
     const nearby = new IntersectionObserver(([entry]) => {
       if (!entry?.isIntersecting) return;
       nearby.disconnect();
+      video.poster = videoPoster;
       video.preload = "auto";
       video.load();
-    }, { rootMargin: "200% 0px" });
-    nearby.observe(root);
+    }, { rootMargin: "400% 0px" });
+    const stopWaiting = whenInteracted(() => nearby.observe(root));
 
     const context = gsap.context(() => {
       messageTimeline = gsap.timeline({ paused: true }).fromTo(
@@ -127,6 +131,7 @@ export function RobotFrameSequence() {
 
     return () => {
       gsap.ticker.remove(follow);
+      stopWaiting();
       nearby.disconnect();
       video.removeEventListener("loadedmetadata", prepareVideo);
       if (rafId) cancelAnimationFrame(rafId);

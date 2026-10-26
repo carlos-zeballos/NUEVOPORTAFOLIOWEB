@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Word, flashAccent, revealWords, scrambleText, wordsHidden } from "../motion/title-motion";
+import { Word, revealWords, scrambleText, wordsHidden } from "../motion/title-motion";
 import { ServiceRow } from "../ui/service-row";
 import { services } from "../../content/services";
 import { servicePath } from "../../lib/router";
@@ -47,8 +47,7 @@ export function ServicesSection() {
           .to("[data-services-line]", { scaleX: 1, duration: 0.6, ease: "power3.inOut" }, 0)
           .set(eyebrow, { autoAlpha: 1 }, 0.1)
           .add(eyebrow ? scrambleText(eyebrow, 0.8) : gsap.timeline(), 0.1)
-          .add(revealWords(list.parentElement!.querySelectorAll("h2 [data-word]")), 0.05)
-          .add(flashAccent(list.parentElement!.querySelectorAll("h2 [data-word-accent]")), 0.9);
+          .add(revealWords(list.parentElement!.querySelectorAll("h2 [data-word]")), 0.05);
         rows.forEach((row, index) => {
           const bar = row.querySelector("[data-bar]");
           const at = 0.15 + index * 0.12;

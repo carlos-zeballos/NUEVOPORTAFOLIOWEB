@@ -3,7 +3,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Plus } from "lucide-react";
 import { contact, faqs } from "../../content/site";
-import { Word, flashAccent, revealWords, scrambleText, wordsHidden } from "../motion/title-motion";
+import { Word, revealWords, scrambleText, wordsHidden } from "../motion/title-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,7 +40,6 @@ export function FaqSection() {
         .set(eyebrow, { autoAlpha: 1 }, 0.1)
         .add(eyebrow ? scrambleText(eyebrow, 0.8) : gsap.timeline(), 0.1)
         .add(revealWords(words), 0.15)
-        .add(flashAccent(section.querySelectorAll("h2 [data-word-accent]")), 1)
         .to("[data-faq-reveal]", { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08, ease: "power3.out" }, 0.55);
       items.forEach((item, index) => {
         const at = 0.3 + index * 0.08;

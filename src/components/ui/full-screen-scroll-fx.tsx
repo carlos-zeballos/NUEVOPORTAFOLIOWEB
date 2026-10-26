@@ -3,7 +3,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./full-screen-scroll-fx.css";
 import { scrollToTarget } from "../scroll/scrollToTarget";
-import { flashAccent, revealWords, wordsHidden } from "../motion/title-motion";
+import { revealWords, wordsHidden } from "../motion/title-motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -181,7 +181,7 @@ export const FullScreenScrollFX = forwardRef<HTMLDivElement, Props>(function Ful
       gsap.to(nodes, { autoAlpha: 1, y: 0, duration: motionOff ? .01 : .85, stagger: motionOff ? 0 : .1, ease: "expo.out" });
       if (motionOff) return;
       if (header) gsap.to(header, { "--fx-line": 1, duration: .7, ease: "power3.inOut" });
-      revealWords(headerWords, .2).eventCallback("onComplete", () => { flashAccent(stage.querySelectorAll(".fx-header [data-word-accent]")); });
+      revealWords(headerWords, .2);
     };
     const prepare = (event: Event) => {
       if ((event as CustomEvent<{ target: string }>).detail?.target !== "#layered-section") return;

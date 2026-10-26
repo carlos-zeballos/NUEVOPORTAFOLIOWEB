@@ -16,14 +16,6 @@ export function revealWords(words: gsap.TweenTarget, delay = 0) {
   return gsap.fromTo(words, wordsHidden, { yPercent: 0, rotate: 0, duration: 0.95, stagger: 0.08, ease: "power4.out", delay });
 }
 
-export function flashAccent(targets: gsap.TweenTarget) {
-  return gsap.fromTo(
-    targets,
-    { filter: "drop-shadow(0 0 0px rgba(3,234,0,0))" },
-    { filter: "drop-shadow(0 0 18px rgba(3,234,0,0.85))", duration: 0.35, yoyo: true, repeat: 1, ease: "power2.out", clearProps: "filter" },
-  );
-}
-
 const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/";
 
 export function scrambleText(element: HTMLElement, duration = 0.9) {

@@ -8,6 +8,7 @@ import { HOME_PATH, PROFILE_PATH, servicePath } from "../../lib/router";
 import { BrandLogo } from "../../components/ui/brand-logo";
 import { CaseDevice } from "../../components/ui/case-device";
 import { ContactIcons } from "../../components/ContactIcons";
+import { RobotFrameSequence } from "../../components/sections/RobotFrameSequence";
 import { HoneypotField } from "../../components/HoneypotField";
 import { HONEYPOT_FIELD, sendLead } from "../../lib/lead";
 import { scrollToTarget } from "../../components/scroll/scrollToTarget";
@@ -244,6 +245,8 @@ export function ServicePage({ service }: { service: Service }) {
             </div>
           </div>
         </section>
+
+        <div className="sv-sequence"><RobotFrameSequence /></div>
 
         <section className="sv-plans" aria-labelledby="sv-plans-title">
           <div className="sv-plans-head" data-sv-reveal>

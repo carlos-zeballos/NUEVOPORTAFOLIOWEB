@@ -25,6 +25,8 @@
 .sv-button-solid{border-color:#03ea00;background:#03ea00;color:#050505}
 .sv-button-solid:hover{background:#3dff3a}
 
+.sv-sequence{position:relative;margin:clamp(40px,7vh,80px) calc(clamp(12px,1.6vw,26px) * -1) 0}
+
 .sv-kicker{display:flex;align-items:center;gap:12px;margin:0 0 26px;font-family:"Space Grotesk","Inter",sans-serif;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#03ea00}
 .sv-kicker span{width:40px;height:1px;background:#03ea00}
 

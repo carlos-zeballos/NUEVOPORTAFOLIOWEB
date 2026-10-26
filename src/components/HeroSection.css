@@ -76,19 +76,13 @@
 .zh-eyebrow{display:flex;align-items:center;gap:10px;margin:0 0 22px;font-family:"Space Grotesk","Inter",sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(242,245,242,.62)}
 .zh-eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--nk-green);box-shadow:0 0 12px var(--nk-green)}
 .zh-title{position:relative;pointer-events:none}
-.zt{position:relative;height:2.5em;line-height:1;font-family:"Archivo Black","Arial Black",sans-serif;font-size:88px;color:#f3f6f3;transform:scaleY(1.22);transform-origin:0 0}
-.zt-stage{position:absolute;left:0;top:0;width:100%;height:2em;perspective:900px;perspective-origin:30% 50%}
-.zt-char{position:absolute;left:0;top:0;display:block;white-space:pre;backface-visibility:hidden;transform-style:preserve-3d}
-.zt-char i{display:block;font-style:normal;opacity:0;transform-origin:50% 100%}
-.zt.is-entered .zt-char i{opacity:1;animation:zt-in 1s cubic-bezier(.16,1,.3,1) both,zt-glint 1.2s ease-out both;animation-delay:calc(var(--i) * 34ms),calc(var(--i) * 34ms + 560ms)}
-.zt.is-entered .zt-char.is-accent i{animation-name:zt-in,zt-glint-accent}
-.zt.is-leaving .zt-char i{animation:zt-out .36s cubic-bezier(.7,0,.84,0) both}
-.zt-char.is-accent{color:var(--nk-green)}
-.zt-fallback{display:block;white-space:nowrap;position:absolute;left:0}
-@keyframes zt-in{0%{opacity:0;transform:translateY(70%) rotateX(-95deg) scale(.92)}45%{opacity:1}100%{opacity:1;transform:none}}
-@keyframes zt-glint{0%,100%{text-shadow:none}35%{text-shadow:0 0 .18em rgba(3,234,0,.55)}}
-@keyframes zt-glint-accent{0%,100%{color:var(--nk-green);text-shadow:none}30%{color:#b8ffb0;text-shadow:0 0 .2em rgba(3,234,0,.75),0 0 .55em rgba(3,234,0,.3)}}
-@keyframes zt-out{to{opacity:0;transform:translateY(-34%) rotateX(70deg)}}
+.zt{margin:0 0 18px;font-family:"Sora",sans-serif;font-size:clamp(2.4rem,4.4vw,4.9rem);font-weight:800;line-height:.86;letter-spacing:-.06em;text-transform:uppercase;color:#fff}
+.zt-line{display:block;white-space:nowrap}
+.zt-mask{display:inline-block;overflow:hidden;margin:0 -.05em -.12em;padding:0 .05em .12em;vertical-align:bottom}
+.zt-word{display:inline-block;transform:translateY(115%) rotate(5deg);transform-origin:0 100%}
+.zt.is-entered .zt-word{animation:zt-in .95s cubic-bezier(.16,1,.3,1) calc(var(--i) * 80ms) both}
+.zt.is-entered .zt-word.text-shine{animation:zt-in .95s cubic-bezier(.16,1,.3,1) calc(var(--i) * 80ms) both,text-shine 5.5s ease-in-out 1.6s infinite}
+@keyframes zt-in{from{transform:translateY(115%) rotate(5deg)}to{transform:none}}
 .zh-lead{max-width:400px;margin:0 0 26px;font-size:clamp(14px,1.1vw,16px);line-height:1.55;color:rgba(242,245,242,.72)}
 .zh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:500px}
 .zh-btn{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:54px;padding:0 20px;border:1px solid rgba(3,234,0,.75);background:rgba(3,5,4,.4);color:#f2f5f2;font-family:"Space Grotesk","Inter",sans-serif;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;text-align:left;text-decoration:none;cursor:pointer;transition:background .3s ease,border-color .3s ease,box-shadow .3s ease}
@@ -110,7 +104,7 @@
   .zh-shade{background:linear-gradient(180deg,rgba(3,5,4,.92) 0,rgba(3,5,4,.75) 34%,transparent 52%)}
   .zh-copy{left:16px;right:16px;top:calc(50% - 8px);width:auto;transform:translateY(-50%)}
   .zh-glow{left:50%;top:56%;width:150vw}
-  .zt{height:2.6em;transform:scaleY(1.18)}
+  .zt{margin-bottom:14px;font-size:clamp(1.75rem,9.6vw,3rem)}
   .zh-eyebrow{margin-bottom:14px;font-size:10px}
   .zh-lead{max-width:300px;margin-bottom:18px;font-size:13.5px}
   .zh-actions{gap:8px}
@@ -121,7 +115,8 @@
   .zh-veil{background:radial-gradient(ellipse 85% 34% at 50% 50%,rgba(3,5,4,.7),rgba(3,5,4,.3) 60%,transparent 85%)}
   .zi-title{font-size:clamp(34px,11vw,60px)}
 }
-@media(prefers-reduced-motion:reduce){.zt.is-entered .zt-char i,.zt-char i,.zh-explore svg,.zi-cue>*,.zi-cue .zi-pill,.zi-mouse i{animation:none}}
+@media(prefers-reduced-motion:reduce){.zt-word,.zt.is-entered .zt-word{transform:none;animation:none}.zt.is-entered .zt-word.text-shine{animation:none}}
+@media(prefers-reduced-motion:reduce){.zh-explore svg,.zi-cue>*,.zi-cue .zi-pill,.zi-mouse i{animation:none}}
 
 .nk-hero.zh .nk-video{animation:zh-pr-fade 1s cubic-bezier(.16,1,.3,1) both}
 .zn{animation:zn-enter .8s cubic-bezier(.16,1,.3,1) both}
