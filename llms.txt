@@ -1,0 +1,53 @@
+# Zebware
+
+> Zebware es un estudio de desarrollo web y software del Perú, con base en Arequipa, fundado por Carlos Zeballos. Diseña y desarrolla páginas web, tiendas online (e-commerce), aplicaciones móviles, soluciones de inteligencia artificial y automatizaciones, e invitaciones digitales para empresas de todo el Perú (Lima, Arequipa, Cusco, Trujillo, Piura, Chiclayo y más) y clientes internacionales en modalidad remota. Combina el ingenio humano con la inteligencia artificial para entregar productos digitales rápidos, seguros y orientados a resultados.
+
+## Servicios y precios (soles, sin IGV)
+
+- **Páginas web** (https://zebware.org/servicios/paginas-web): web informativa S/ 1,200 – 1,800; web administrable con panel S/ 2,500 – 3,800; web a medida con sistema S/ 4,000 – 6,000. Entrega desde 7 días hábiles.
+- **E-commerce** (https://zebware.org/servicios/e-commerce): tienda esencial S/ 2,500 – 3,500; tienda profesional S/ 3,800 – 5,500; tienda a medida desde S/ 6,000. Pagos con Izipay, Mercado Pago, Culqi, Yape o Plin. Entrega desde 3 semanas.
+- **Apps móviles** (https://zebware.org/servicios/apps-moviles): app web (PWA) S/ 2,500 – 5,000; app MVP iOS y Android S/ 8,000 – 15,000; app de negocio S/ 15,000 – 35,000. Entrega desde 4 semanas.
+- **IA y automatizaciones** (https://zebware.org/servicios/ia-y-automatizaciones): asistente de WhatsApp S/ 1,500 – 2,500 + S/ 150 al mes; automatización de procesos S/ 2,500 – 4,000 + S/ 250 al mes; agente a medida desde S/ 6,000 + S/ 400 al mes. Entrega desde 1 semana.
+- **Invitaciones digitales** (https://zebware.org/servicios/invitaciones-digitales): esencial S/ 150 – 250; premium S/ 300 – 450; evento corporativo desde S/ 600. Entrega desde 3 días hábiles.
+- **Software y sistemas web a medida** para empresas.
+
+## Proyectos
+
+- Mirasol (Grupo Michell): https://mirasol.com.pe/intro
+- MFH Knits (Grupo Michell): sistema B2B
+- A&D Grupo, web corporativa: https://aydgrupo.com/
+- Global Vertical, web corporativa: https://gvertical.com/
+- Kuro Sushi, web de restaurante: https://kurosushifusion.com/
+- Kuro Nakama, app de fidelización: https://kuronakama.com/
+- Alpaca Fiesta, landing de evento nacional: https://alpacafiestaperu.com/
+- Boda Stephany & Julio, invitación digital: https://boda-stephany-julio.vercel.app/
+
+## Datos de contacto
+
+- Sitio web: https://zebware.org/
+- Ubicación: Arequipa, Perú (atiende a todo el Perú y clientes internacionales de forma remota)
+- Teléfono / WhatsApp: +51 946 691 999
+- Correo: carlos.fernando.zeballos@gmail.com
+- Instagram: https://instagram.com/zebware.pe
+- LinkedIn: https://www.linkedin.com/in/carlos-zeballos-28500a202/
+- GitHub: https://github.com/carlos-zeballos
+- Tiempo de respuesta: menos de 24 horas
+- Idiomas: español e inglés
+- Precios: desde S/ 150 en invitaciones y desde S/ 1,200 en páginas web (sin IGV)
+
+## Preguntas frecuentes
+
+- **¿Cuánto cuesta una página web en Perú?** Una web informativa cuesta entre S/ 1,200 y 1,800, y una web con panel administrativo entre S/ 2,500 y 3,800 (sin IGV). El precio final depende del alcance (páginas, panel administrativo, integraciones o pagos). La cotización es gratuita y se envía en menos de 24 horas.
+- **¿Cuánto tarda en estar lista una web?** Una página web estándar suele entregarse desde siete días hábiles desde el inicio acordado. E-commerce, apps o integraciones pueden tomar más tiempo; la fecha se fija antes de comenzar.
+- **¿Qué servicios ofrece Zebware?** Páginas web, tiendas online (e-commerce), apps móviles iOS y Android, inteligencia artificial y automatizaciones (chatbots, agentes), software a medida e invitaciones digitales.
+- **¿Trabajan con clientes fuera de Arequipa o del Perú?** Sí. Atiende a empresas de Lima, Arequipa, Cusco, Trujillo y todo el Perú, además del extranjero de forma remota, con videollamadas y comunicación por WhatsApp o correo.
+- **¿Cómo se realiza el pago?** En Perú: adelanto al inicio y saldo a la entrega, por Yape, Plin o transferencia bancaria. En el extranjero: transferencia internacional o plataforma acordada.
+- **¿Qué necesito para empezar?** La idea, el logotipo si existe y referencias visuales. Si falta contenido, se define en la reunión inicial.
+- **¿Puedo actualizar mi web después de la entrega?** Sí. Se entregan indicaciones para cambios simples y existe un plan de mantenimiento mensual para actualizaciones, mejoras y soporte.
+
+## Por qué Zebware
+
+- Ideas que impactan (estrategia y dirección).
+- Experiencias que conectan (diseño centrado en usuarios).
+- Sistemas que escalan (tecnología y precisión).
+- Resultados que importan (impacto y crecimiento).

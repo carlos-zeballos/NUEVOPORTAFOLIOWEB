@@ -1,0 +1,14 @@
+{
+  "name": "Zebware — Desarrollo web, apps e IA en Perú",
+  "short_name": "Zebware",
+  "description": "Páginas web, e-commerce, apps, software a medida e inteligencia artificial para empresas de todo el Perú.",
+  "lang": "es-PE",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030504",
+  "theme_color": "#030504",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
